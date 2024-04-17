@@ -12,7 +12,7 @@
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow)
 {
 	//ウィンドウの名前を変える
-	SetMainWindowText("アン〇イン戦");
+	SetMainWindowText("パネルパズル");
 
 	//ウィンドウの状態を設定する
 	ChangeWindowMode(true);
@@ -34,9 +34,9 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	g_CurrentSceneID = SCENE_ID_INIT_TITLE;		//シーンID
 
 	//シーンクラス宣言
-	Title title;
-	Play play;				//プレイシーン
-	Rasult rasult;
+	Title title{};			//タイトルシーン
+	Play play{};			//プレイシーン
+	Result result{};		//リザルトシーン
 
 	//入力制御初期化
 	Input::Init();
@@ -126,20 +126,20 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 				//リザルトシーン初期化処理
 			case SCENE_ID_INIT_RESULT:
 
-				rasult.Init();
+				result.Init();
 
 				break;
 				//リザルトシーン通常処理
 			case SCENE_ID_LOOP_RESULT:
 
-				rasult.Step();
-				rasult.Draw();
+				result.Step();
+				result.Draw();
 
 				break;
 				//リザルトシーン終了処理
 			case SCENE_ID_FIN_RESULT:
 
-				rasult.Fin();
+				result.Fin();
 
 				break;
 			}

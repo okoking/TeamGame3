@@ -18,7 +18,7 @@ const char RESULT_IMAGE_PATH[RESULT_IMAGE_MAX_NUM][255] =
 	"data/result/gear3.png",	//”wŒi
 };
 
-class Rasult
+class Result
 {
 private:
 	int imageHandle[RESULT_IMAGE_MAX_NUM];	//‰æ‘œƒnƒ“ƒhƒ‹

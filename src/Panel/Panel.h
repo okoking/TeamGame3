@@ -11,8 +11,8 @@ enum PANEL_PATTERN {
 // パネルの種類
 enum PANEL_TYPE
 {
-	PANEL_TYPE_PROBLEM = 0,	// 問題
-	PANEL_TYPE_ANS,			// 回答
+	PANEL_TYPE_QUESTION = 0,	// 問題
+	PANEL_TYPE_ANS,				// 回答
 
 	PANEL_TYPE_NUM,
 };
@@ -24,13 +24,98 @@ const char INSIDEPANEL_PATH[] = { "data/play/パネル裏.png" };
 // 画像サイズ
 const int PANEL_SIZE = 40;
 
+
+// csv関係===========================================
+// 問題の難易度
+enum QUESTION_LEVEL
+{
+	QUESTION_LEVEL_44 = 0,	// 4×4マス
+	QUESTION_LEVEL_55,		// 5×5マス
+	QUESTION_LEVEL_66,		// 6×6マス
+
+	QUESTION_LEVEL_NUM,
+};
+
 // パネルの配置
-const int PANEL_X_NUM = 5;
-const int PANEL_Y_NUM = 5;
+const int PANEL_X_MAX_NUM = 6;
+const int PANEL_Y_MAX_NUM = 6;
+
+const int PANEL_X_NUM[QUESTION_LEVEL_NUM] = 
+{
+	4,	// QUESTION_LEVEL_44
+	5,	// QUESTION_LEVEL_55
+	6,	// QUESTION_LEVEL_66
+};
+
+const int PANEL_Y_NUM[QUESTION_LEVEL_NUM] = 
+{
+	4,	// QUESTION_LEVEL_44
+	5,	// QUESTION_LEVEL_55
+	6,	// QUESTION_LEVEL_66
+};
+
+// 問題の種類
+enum QUESTION_TYPE
+{
+	QUESTION_TYPE_1 = 0,
+	QUESTION_TYPE_2,
+
+	QUESTION_TYPE_NUM,
+};
+
+//csvのファイルパス
+const char CsvFilePath[QUESTION_LEVEL_NUM][QUESTION_TYPE_NUM][256] =
+{
+	// QUESTION_LEVEL_44
+	{
+		"Data/csv/44/Question1.csv",	// QUESTION_TYPE_1
+		"Data/csv/44/Question2.csv",	// QUESTION_TYPE_2
+	},
+
+	// QUESTION_LEVEL_55
+	{
+		"Data/csv/55/Question1.csv",	// QUESTION_TYPE_1
+		"Data/csv/55/Question2.csv",	// QUESTION_TYPE_2
+
+	},
+
+	// QUESTION_LEVEL_66
+	{
+		"Data/csv/66/Question1.csv",	// QUESTION_TYPE_1
+		"Data/csv/66/Question2.csv",	// QUESTION_TYPE_2
+	},
+};
+
+// 各問題の手数
+const int STEP_NUM[QUESTION_LEVEL_NUM][QUESTION_TYPE_NUM] = {
+	// QUESTION_LEVEL_44
+	{
+		1,	// QUESTION_TYPE_1
+		2,	// QUESTION_TYPE_2
+	},
+
+	// QUESTION_LEVEL_55
+	{
+		1,	// QUESTION_TYPE_1
+		2,	// QUESTION_TYPE_2
+
+	},
+
+	// QUESTION_LEVEL_66
+	{
+		1,	// QUESTION_TYPE_1
+		2,	// QUESTION_TYPE_2
+	},
+};
+
+//=================================================
 
 struct PanelInfo
 {
 	int handle[PANEL_PATTERN_NUM];		//画像ハンドル
+
+	int m_FileReadLevelData;		// ファイル読み込み用
+
 	PANEL_PATTERN Panelpattern;	// パネルの模様保存用
 
 	int x, y;			// 座標
@@ -42,12 +127,16 @@ struct PanelInfo
 class Panel
 {
 private:
-	PanelInfo problempanelInfo[PANEL_Y_NUM][PANEL_X_NUM];
-	PanelInfo anspanelInfo[PANEL_Y_NUM][PANEL_X_NUM];
+	PanelInfo questionpanelInfo[PANEL_Y_MAX_NUM][PANEL_X_MAX_NUM];
+	PanelInfo anspanelInfo[PANEL_Y_MAX_NUM][PANEL_X_MAX_NUM];
 
 	int InversionXpos, InversionYpos;	// 反転するパネルの座標
 
 	bool isInside;	// 回転させるかどうか
+
+	// 問題決め用
+	QUESTION_LEVEL questionLevel;
+	QUESTION_TYPE questionType;
 
 public:
 	Panel();
@@ -58,6 +147,9 @@ public:
 
 	// データロード
 	void Load();
+
+	// ファイル読み込み
+	void ReadFile();
 
 	// パネルの通常処理
 	void Step();

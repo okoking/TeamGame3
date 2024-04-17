@@ -5,7 +5,7 @@
 #include"../Play/Play.h"
 
 //‰Šú‰»
-void Rasult::Init()
+void Result::Init()
 {
 	for (int i = 0; i < RESULT_IMAGE_MAX_NUM; i++)
 	{
@@ -23,7 +23,7 @@ void Rasult::Init()
 }
 
 //’Êíˆ—
-void Rasult::Step()
+void Result::Step()
 {
 	//ƒMƒA‚Ì‰ñ“]
 	RgearAngle += 0.1f;
@@ -41,7 +41,7 @@ void Rasult::Step()
 }
 
 //•`‰æ
-void Rasult::Draw()
+void Result::Draw()
 {
 	//”wŒi•`‰æ
 	DrawGraph(0, 0, imageHandle[RESULT_BACK_GROUND], true);
@@ -61,7 +61,7 @@ void Rasult::Draw()
 }
 
 //I—¹ˆ—
-void Rasult::Fin()
+void Result::Fin()
 {
 	//bgm
 	Sound::Bgm::StopSound(BGM_RESULT);
