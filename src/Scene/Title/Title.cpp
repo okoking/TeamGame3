@@ -6,6 +6,9 @@
 
 SCENE_ID g_CurrentSceneID;	//シーン変数
 
+//ゲームモード
+GAME_MODE g_GameModeID;
+
 //初期化
 void Title::Init()
 {
@@ -15,191 +18,146 @@ void Title::Init()
 		imageHandle[i] = LoadGraph(TITLE_IMAGE_PATH[i]);
 	}
 
-	//座標の設定
-	seaY = 200;
-	jettyY = 200;
-
-	titleY =  - 100;
-
-	for (int i = 0; i < 4; i++)
-	{
-		cloudX[i][0] = 0;
-		cloudX[i][1] = SCREEN_SIZE_X;
-	}
-	cloudY = -20;
-
-	//透明度設定
-	fade[0] = 0;
-	fade[1] = 0;
-	lighting = true;
-
-	//進行度
-	progress = 1;
-
 	//bgm
 	Sound::Bgm::Play(BGM_TITLE);
+	Sound::Bgm::SetVolume(BGM_TITLE,50);
+	//歯車回転
+	gearAngle = 0.0f;
+
+	//透過点滅
+	fade[0] = 0;
+	fade[1] = 0;
 
 	//通常処理に移行
 	g_CurrentSceneID = SCENE_ID_LOOP_TITLE;
+
+	//ゲームモードを初期化
+	g_GameModeID = GAME_MODE_EASY;
 }
 
 //通常処理
 void Title::Step()
 {
-	switch (progress)
+	//現れる
+	if (lighting)
 	{
-	case 0:	//画面作り
+		fade[0] += 4;
+		fade[1] += 7;
 
-		//海
-		if (seaY <= 0)
-		{
-			seaY = 0;
-		}
-		else
-		{
-			seaY -= 1.4f;
-		}
-
-		//桟橋
-		if (jettyY <= 0)
-		{
-			jettyY = 0;
-		}
-		else
-		{
-			jettyY -= 1.2f;
-		}
-
-		//タイトル透明度
 		if (fade[0] >= 255)
 		{
-			fade[0] = 255;
+			lighting = false;
 		}
-		else
+		if (fade[1] >= 255)
 		{
-			fade[0] += 1;
+			lighting = false;
 		}
+	}
+	//消える
+	else
+	{
+		fade[0] -= 4;
+		fade[1] -= 7;
 
-		//タイトル
-		if (titleY >= 0)
+		if (fade[0] <= 0)
 		{
-			titleY = 0;
+			lighting = true;
 		}
-		else
+		if (fade[1] <= 0)
 		{
-			titleY += 0.5f;
+			lighting = true;
 		}
+	}
 
-		//以上が完成していると進行
-		if (seaY == 0 && jettyY == 0 && titleY == 0 && fade[0])
-		{
-			progress++;
-		}
+	gearAngle+=0.1f;
+		
 
-		break;
+	//スペースキーで画面変化
+	if (Input::Key::Push(KEY_INPUT_SPACE))
+	{
+		//se
+		Sound::Se::Play(SE_SYSTEM);
 
-	case 1:	//入力待ち
+		//終了処理へ
+		g_CurrentSceneID = SCENE_ID_FIN_TITLE;
+	}
 
-		//UIの点滅
-		//現れる
-		if (lighting)
-		{
-			fade[1] += 5;
-
-			if (fade[1] >= 255)
-			{
-				lighting = false;
-			}
-		}
-		//消える
-		else
-		{
-			fade[1] -= 5;
-
-			if (fade[1] <= 0)
-			{
-				lighting = true;
-			}
-		}
-
-		//左クリックで以下
-		if (Input::Mouse::Push(MOUSE_INPUT_LEFT))
+	//矢印キーで状態変化
+	if (g_GameModeID != GAME_MODE_EASY) {
+		if (Input::Key::Push(KEY_INPUT_LEFT))
 		{
 			//se
 			Sound::Se::Play(SE_SYSTEM);
-
-			//終了処理へ
-			g_CurrentSceneID = SCENE_ID_FIN_TITLE;
+			if(g_GameModeID== GAME_MODE_HARD)
+				g_GameModeID= GAME_MODE_NORMAL;
+			else
+				g_GameModeID = GAME_MODE_EASY;
 		}
-
-		break;
-
-
-	default:
-		break;
 	}
-
-	//画面未完成時に左クリックで完成
-	if (progress != 1 && Input::Mouse::Push(MOUSE_INPUT_LEFT))
-	{
-		//座標の設定
-		seaY = 0;
-		jettyY = 0;
-		fade[0] = 255;
-		titleY = 0;
-
-		//入力待ちへ
-		progress = 1;
-	}
-
-	//雲の流れ
-	for (int i = 0; i < 2; i++)
-	{
-		cloudX[0][i] -= 0.3;
-		cloudX[1][i] -= 0.5;
-		cloudX[2][i] -= 0.4;
-		cloudX[3][i] -= 0.1;
-	}
-	
-	//画面外に行くと元の位置に戻す
-	for (int i = 0; i < 4; i++)
-	{
-		for (int n = 0; i < 2; i++)
+	if (g_GameModeID != GAME_MODE_HARD) {
+		if (Input::Key::Push(KEY_INPUT_RIGHT))
 		{
-			if (cloudX[i][n] <= -SCREEN_SIZE_X)
-			{
-				cloudX[i][n] = SCREEN_SIZE_X;
-			}
+			//se
+			Sound::Se::Play(SE_SYSTEM);
+			if (g_GameModeID == GAME_MODE_EASY)
+				g_GameModeID = GAME_MODE_NORMAL;
+			else
+				g_GameModeID = GAME_MODE_HARD;
 		}
 	}
 	
 }
 
-//描画
-void Title::Draw()
-{
-	DrawGraphF(0, 0, imageHandle[TITLE_SKY], true);	//空
-	DrawGraphF(0, seaY, imageHandle[TITLE_SEA], true);	//海
-	DrawGraphF(0, jettyY, imageHandle[TITLE_JETTY], true);	//桟橋
 
-	//雲
-	for (int i = 0; i < 4; i++)
-	{
-		DrawGraphF(cloudX[i][0], cloudY, imageHandle[TITLE_CLOUD1 + i], true);
-		DrawGraphF(cloudX[i][1], cloudY, imageHandle[TITLE_CLOUD1 + i], true);
+void Title::Draw()//800 600
+{	
+	//タイトル下地
+	DrawGraph(0, 0, imageHandle[TITLE_TITLE], true);	
+
+	//左上
+	DrawRotaGraph(15, 30,1.0f, (int)gearAngle, imageHandle[TITLE_GEAR1], true);
+
+	//左下
+	DrawRotaGraph(0, 450,0.5, (int)gearAngle*-1+0.4, imageHandle[TITLE_GEAR2], true);	
+	DrawRotaGraph(34, 552, 0.5, (int)gearAngle*-1+0.1, imageHandle[TITLE_GEAR2], true);
+	DrawRotaGraph(92, 479, 0.5, (int)gearAngle, imageHandle[TITLE_GEAR2], true);
+
+	//右下
+	DrawRotaGraph(760, 460,1.0f, (int)gearAngle*-1+0.5, imageHandle[TITLE_GEAR3], true);	
+	DrawRotaGraph(663, 576,1.0f, (int)gearAngle, imageHandle[TITLE_GEAR3], true);	
+
+	DrawRotaGraph(400, 440, 1.0f, 0.0f, imageHandle[TITLE_EASY+g_GameModeID], true);
+
+	//タイトル下の線 座標、左上座標、描画するサイズ、ハンドル、透明化、画像反転有無  421 43
+	DrawGraph(210, 310, imageHandle[TITLE_LINE], true);
+	//DrawRotaGraph(400, 380, 1.0f,0.0f,imageHandle[TITLE_GEARHARF], true);
+
+	//矢印
+	if (g_GameModeID != GAME_MODE_NORMAL) {
+		//fadeで透明度変更
+		SetDrawBlendMode(DX_BLENDMODE_ALPHA, fade[1]);
+		DrawRotaGraph(250, 440, 0.5, 0, imageHandle[TITLE_ARROW2], true);
+		DrawRotaGraph(540, 440, 0.5, 0.0f, imageHandle[TITLE_ARROW], true);
+		//表示を元に戻す
+		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+
+	}
+	else {
+		//fadeで透明度変更
+		SetDrawBlendMode(DX_BLENDMODE_ALPHA, fade[1]);
+		DrawRotaGraph(200, 440, 0.5, 0, imageHandle[TITLE_ARROW2], true);
+		DrawRotaGraph(590, 440, 0.5, 0.0f, imageHandle[TITLE_ARROW], true);
+		//表示を元に戻す
+		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+
 	}
 
 	//fadeで透明度変更
 	SetDrawBlendMode(DX_BLENDMODE_ALPHA, fade[0]);
-	DrawGraphF(0, titleY, imageHandle[TITLE_TITLE], true);	//タイトル
+	DrawGraphF(300, 370, imageHandle[TITLE_START], true);	//入力待ち
 	//表示を元に戻す
 	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 
-	//fadeで透明度変更
-	SetDrawBlendMode(DX_BLENDMODE_ALPHA, fade[1]);
-	DrawGraphF(0, 0, imageHandle[TITLE_START], true);	//入力待ち
-	//表示を元に戻す
-	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 }
 
 //終了処理

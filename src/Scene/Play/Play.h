@@ -5,7 +5,6 @@
 #include "../../Player/Player.h"
 #include "../../Collision/Collision.h"
 #include "../../MathPlus/MathPlus.h"
-#include "../../Arrow/arow.h"
 
 class Play
 {
@@ -13,9 +12,10 @@ private:
 	//クラスの変数宣言
 	Player player;
 
-	Arrow arrow;	// 矢
-
 	int backgroundHandle;	//背景画像ハンドル
+	int enemyhandle;
+	int ImgHP;
+	int img_sikaku;
 
 public:
 	//プレイシーンの初期化

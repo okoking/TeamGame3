@@ -2,7 +2,7 @@
 #include"../Result/Result.h"
 #include"../../Scene/Scene.h"
 #include"../../Input/Input.h"
-
+#include"../Play/Play.h"
 
 //初期化
 void Rasult::Init()
@@ -12,15 +12,11 @@ void Rasult::Init()
 		//画像読み込み
 		imageHandle[i] = LoadGraph(RESULT_IMAGE_PATH[i]);
 	}
-
-	y = 0;
-	fade[0] = 0;
-	fade[1] = 0;
-	lighting = false;
-	progress = 1;
+	RgearAngle = 0;
 
 	//bgm
 	Sound::Bgm::Play(BGM_RESULT);
+	Sound::Bgm::SetVolume(BGM_RESULT, 50);
 
 	//通常処理に移行
 	g_CurrentSceneID = SCENE_ID_LOOP_RESULT;
@@ -29,77 +25,17 @@ void Rasult::Init()
 //通常処理
 void Rasult::Step()
 {
-	switch (progress)
+	//ギアの回転
+	RgearAngle += 0.1;
+
+	//左クリックで以下
+	if (Input::Key::Push(KEY_INPUT_SPACE))
 	{
-	case 0:	//スコア表示
+		//se
+		Sound::Se::Play(SE_SYSTEM);
 
-		//スコアの透明度
-		if (fade[0] >= 255)
-		{
-			fade[0] = 255;
-		}
-		else
-		{
-			fade[0] += 2;
-		}
-
-		//スコアの座標
-		if (y >= 120)
-		{
-			y = 120;
-		}
-		else
-		{
-			y += 1;
-		}
-
-		//以上が指定通りなら進行
-		if (fade[0] == 255 && y == 120)
-		{
-			progress++;
-		}
-
-		break;
-
-	case 1:	//入力待ち
-
-		//点滅
-		//点く
-		if (lighting)
-		{
-			fade[1] += 5;
-
-			if (fade[1] >= 255)
-			{
-				lighting = false;
-			}
-		}
-		//消える
-		else
-		{
-			fade[1] -= 5;
-
-			if (fade[1] <= 0)
-			{
-				lighting = true;
-			}
-		}
-
-		//左クリックで以下
-		if (Input::Mouse::Push(MOUSE_INPUT_LEFT))
-		{
-			//se
-			Sound::Se::Play(SE_SYSTEM);
-
-			//終了処理へ
-			g_CurrentSceneID = SCENE_ID_FIN_RESULT;
-		}
-
-		break;
-
-		
-	default:
-		break;
+		//終了処理へ
+		g_CurrentSceneID = SCENE_ID_FIN_RESULT;
 	}
 	
 }
@@ -110,24 +46,18 @@ void Rasult::Draw()
 	//背景描画
 	DrawGraph(0, 0, imageHandle[RESULT_BACK_GROUND], true);
 
-	//fadeで透明度変更
-	SetDrawBlendMode(DX_BLENDMODE_ALPHA, fade[0]);
+	//歯車
+	DrawRotaGraph(10, 10, 0.7, (int)RgearAngle, imageHandle[RESULT_GAER1], true);
+	DrawRotaGraph(-3, 90, 0.3, (int)RgearAngle*-1, imageHandle[RESULT_GAER1], true);
+	DrawRotaGraph(750, 50, 1.1, (int)RgearAngle, imageHandle[RESULT_GAER2], true);
+
+
 	//文字の大きさを変更
 	SetFontSize(60);
-	DrawFormatString(300, y, GetColor(255, 255, 255), "スコア");
+	
 	//文字の大きさを変更
-	SetFontSize(80);
-
-	//文字の大きさを元に戻す
-	SetFontSize(20);
-	//表示を元に戻す
-	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
-
-	//fadeで透明度変更
-	SetDrawBlendMode(DX_BLENDMODE_ALPHA, fade[1]);
-	DrawGraphF(0, 0, imageHandle[RESULT_FINISH], true);	//タイトル
-	//表示を元に戻す
-	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+	//SetFontSize(80);
+	
 }
 
 //終了処理
