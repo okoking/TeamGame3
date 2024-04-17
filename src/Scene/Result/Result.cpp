@@ -26,7 +26,7 @@ void Rasult::Init()
 void Rasult::Step()
 {
 	//ギアの回転
-	RgearAngle += 0.1;
+	RgearAngle += 0.1f;
 
 	//左クリックで以下
 	if (Input::Key::Push(KEY_INPUT_SPACE))

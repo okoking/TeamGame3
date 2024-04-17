@@ -5,12 +5,16 @@
 #include "../../Player/Player.h"
 #include "../../Collision/Collision.h"
 #include "../../MathPlus/MathPlus.h"
+#include "../../Panel/Panel.h"
 
 class Play
 {
 private:
 	//クラスの変数宣言
 	Player player;
+
+	// パネルの変数宣言
+	Panel panel;
 
 	int backgroundHandle;	//背景画像ハンドル
 	int enemyhandle;

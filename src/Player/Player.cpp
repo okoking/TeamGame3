@@ -72,7 +72,7 @@ void Player::Draw()
 
 	DrawGraph(0, 0, HpHundle, true); // HP
 
-	DrawBox(15, 30, Hp * 62, 84, Cr, TRUE);    // 四角形を描画
+	// DrawBox(15, 30, Hp * 62, 84, Cr, TRUE);    // 四角形を描画
 }
 
 //プレイヤーの終了処理

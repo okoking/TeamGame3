@@ -13,9 +13,9 @@ Panel::Panel()
 	// 回転させるかどうか
 	isInside = false;
 
-	for (int PanelYIndex = 0; PanelYIndex < PANEL_MAX_NUM; PanelYIndex++) {
-		for (int PanelXIndex = 0; PanelXIndex < PANEL_MAX_NUM; PanelXIndex++) {
-			for (int PanelPatternindex; PanelPatternindex < PANEL_PATTERN_NUM; PanelPatternindex++) {
+	for (int PanelYIndex = 0; PanelYIndex < PANEL_X_NUM; PanelYIndex++) {
+		for (int PanelXIndex = 0; PanelXIndex < PANEL_Y_NUM; PanelXIndex++) {
+			for (int PanelPatternindex = 0; PanelPatternindex < PANEL_PATTERN_NUM; PanelPatternindex++) {
 				//画像ハンドル
 				problempanelInfo[PanelYIndex][PanelXIndex].handle[PanelPatternindex] = -1;
 				anspanelInfo[PanelYIndex][PanelXIndex].handle[PanelPatternindex] = -1;
@@ -62,9 +62,9 @@ void Panel::Init()
 	// 回転させるかどうか
 	isInside = false;
 
-	for (int PanelYIndex = 0; PanelYIndex < PANEL_MAX_NUM; PanelYIndex++) {
-		for (int PanelXIndex = 0; PanelXIndex < PANEL_MAX_NUM; PanelXIndex++) {
-			for (int PanelPatternindex; PanelPatternindex < PANEL_PATTERN_NUM; PanelPatternindex++) {
+	for (int PanelYIndex = 0; PanelYIndex < PANEL_X_NUM; PanelYIndex++) {
+		for (int PanelXIndex = 0; PanelXIndex < PANEL_Y_NUM; PanelXIndex++) {
+			for (int PanelPatternindex = 0; PanelPatternindex < PANEL_PATTERN_NUM; PanelPatternindex++) {
 				// 画像ハンドル
 				problempanelInfo[PanelYIndex][PanelXIndex].handle[PanelPatternindex] = 0;
 				anspanelInfo[PanelYIndex][PanelXIndex].handle[PanelPatternindex] = 0;
@@ -76,10 +76,10 @@ void Panel::Init()
 
 			// 座標
 			problempanelInfo[PanelYIndex][PanelXIndex].x = PANEL_SIZE * PanelXIndex;
-			problempanelInfo[PanelYIndex][PanelXIndex].y = PANEL_SIZE * PanelYIndex;
+			problempanelInfo[PanelYIndex][PanelXIndex].y = PANEL_SIZE * PanelYIndex + 300;
 
-			anspanelInfo[PanelYIndex][PanelXIndex].x = PANEL_SIZE * PanelXIndex + 320;
-			anspanelInfo[PanelYIndex][PanelXIndex].y = PANEL_SIZE * PanelYIndex + 320;
+			anspanelInfo[PanelYIndex][PanelXIndex].x = PANEL_SIZE * PanelXIndex + 400;
+			anspanelInfo[PanelYIndex][PanelXIndex].y = PANEL_SIZE * PanelYIndex + 300;
 
 			// 使用中フラグ
 			problempanelInfo[PanelYIndex][PanelXIndex].isUse = true;
@@ -99,8 +99,8 @@ void Panel::Init()
 // データロード
 void Panel::Load()
 {
-	for (int PanelYIndex = 0; PanelYIndex < PANEL_MAX_NUM; PanelYIndex++) {
-		for (int PanelXIndex = 0; PanelXIndex < PANEL_MAX_NUM; PanelXIndex++) {
+	for (int PanelYIndex = 0; PanelYIndex < PANEL_X_NUM; PanelYIndex++) {
+		for (int PanelXIndex = 0; PanelXIndex < PANEL_Y_NUM; PanelXIndex++) {
 			//パネルハンドル
 			problempanelInfo[PanelYIndex][PanelXIndex].handle[PANEL_PATTERN_NORMAL] = LoadGraph(NORMALPANEL_PATH);
 			anspanelInfo[PanelYIndex][PanelXIndex].handle[PANEL_PATTERN_NORMAL] = LoadGraph(NORMALPANEL_PATH);
@@ -115,6 +115,9 @@ void Panel::Load()
 // パネルの通常処理
 void Panel::Step()
 {
+	// パネルとマウスの当たり判定
+	PaneltoMouseCollision();
+
 	// パネル反転用
 	InversionPanel();
 }
@@ -122,13 +125,18 @@ void Panel::Step()
 // パネルの描画
 void Panel::Draw()
 {
-	for (int PanelYIndex = 0; PanelYIndex < PANEL_MAX_NUM; PanelYIndex++) {
-		for (int PanelXIndex = 0; PanelXIndex < PANEL_MAX_NUM; PanelXIndex++) {
-			DrawGraph(problempanelInfo[PanelYIndex][PanelXIndex].x, problempanelInfo[PanelYIndex][PanelXIndex].y,
-				problempanelInfo[PanelYIndex][PanelXIndex].handle[problempanelInfo[PanelYIndex][PanelXIndex].Panelpattern], true);
+	for (int PanelYIndex = 0; PanelYIndex < PANEL_X_NUM; PanelYIndex++) {
+		for (int PanelXIndex = 0; PanelXIndex < PANEL_Y_NUM; PanelXIndex++) {
+			if (problempanelInfo[PanelYIndex][PanelXIndex].isUse) {
+				DrawGraph(problempanelInfo[PanelYIndex][PanelXIndex].x, problempanelInfo[PanelYIndex][PanelXIndex].y,
+					problempanelInfo[PanelYIndex][PanelXIndex].handle[problempanelInfo[PanelYIndex][PanelXIndex].Panelpattern], true);
+			}
 
-			DrawGraph(anspanelInfo[PanelYIndex][PanelXIndex].x, anspanelInfo[PanelYIndex][PanelXIndex].y,
-				anspanelInfo[PanelYIndex][PanelXIndex].handle[anspanelInfo[PanelYIndex][PanelXIndex].Panelpattern], true);
+			if (anspanelInfo[PanelYIndex][PanelXIndex].isUse) {
+				DrawGraph(anspanelInfo[PanelYIndex][PanelXIndex].x, anspanelInfo[PanelYIndex][PanelXIndex].y,
+					anspanelInfo[PanelYIndex][PanelXIndex].handle[anspanelInfo[PanelYIndex][PanelXIndex].Panelpattern], true);
+			}
+
 		}
 	}
 }
@@ -136,8 +144,8 @@ void Panel::Draw()
 // パネル終了処理
 void Panel::Fin()
 {
-	for (int PanelYIndex = 0; PanelYIndex < PANEL_MAX_NUM; PanelYIndex++) {
-		for (int PanelXIndex = 0; PanelXIndex < PANEL_MAX_NUM; PanelXIndex++) {
+	for (int PanelYIndex = 0; PanelYIndex < PANEL_X_NUM; PanelYIndex++) {
+		for (int PanelXIndex = 0; PanelXIndex < PANEL_Y_NUM; PanelXIndex++) {
 			//パネルハンドル
 			DeleteGraph(problempanelInfo[PanelYIndex][PanelXIndex].handle[PANEL_PATTERN_NORMAL]);
 			DeleteGraph(problempanelInfo[PanelYIndex][PanelXIndex].handle[PANEL_PATTERN_NORMAL]);
@@ -162,8 +170,8 @@ void Panel::PaneltoMouseCollision()
 	GetMousePoint(&MousePosX, &MousePosY);
 
 	if (Input::Mouse::Push(MOUSE_INPUT_LEFT)) {
-		for (int PanelYIndex = 0; PanelYIndex < PANEL_MAX_NUM; PanelYIndex++) {
-			for (int PanelXIndex = 0; PanelXIndex < PANEL_MAX_NUM; PanelXIndex++) {
+		for (int PanelYIndex = 0; PanelYIndex < PANEL_X_NUM; PanelYIndex++) {
+			for (int PanelXIndex = 0; PanelXIndex < PANEL_Y_NUM; PanelXIndex++) {
 				if (Collision::Rect(anspanelInfo[PanelYIndex][PanelXIndex].x, anspanelInfo[PanelYIndex][PanelXIndex].y, PANEL_SIZE, PANEL_SIZE,
 					MousePosX, MousePosY, 1, 1)) {
 					// 反転を左上から始める
@@ -184,9 +192,19 @@ void Panel::InversionPanel()
 {
 	if (isInside) {	// 反転開始
 		for (int PanelYIndex = InversionYpos; PanelYIndex < InversionYpos + 3; PanelYIndex++) {
+			if (PanelYIndex < 0) {
+				continue;
+			}
+			if (PanelYIndex >= PANEL_Y_NUM) {
+				break;
+			}
 			for (int PanelXIndex = InversionXpos; PanelXIndex < InversionXpos + 3; PanelXIndex++) {
-				if (PanelYIndex < 0 || PanelYIndex > PANEL_Y_NUM || PanelXIndex < 0 || PanelXIndex > PANEL_X_NUM) {
+				if (PanelXIndex < 0) {
 					continue;
+				}
+				if (PanelXIndex >= PANEL_X_NUM) {
+					PanelXIndex = InversionXpos;
+					break;
 				}
 
 				if (anspanelInfo[PanelYIndex][PanelXIndex].Panelpattern == PANEL_PATTERN_NORMAL) {
