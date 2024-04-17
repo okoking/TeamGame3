@@ -1,6 +1,7 @@
 #include "Panel.h"
 #include "DxLib.h"
 #include "../Collision/Collision.h"
+#include "../Input/Input.h"
 
 // コンストラクタ
 Panel::Panel()
@@ -153,19 +154,25 @@ void Panel::ResetPanel(int _xindex, int _yindex)
 {
 }
 
-// パネルとマウスの当たり判定(引数：マウスの座標)
-void Panel::PaneltoMouseCollision(int MousePosx, int MousePosy)
+// パネルとマウスの当たり判定
+void Panel::PaneltoMouseCollision()
 {
-	for (int PanelYIndex = 0; PanelYIndex < PANEL_MAX_NUM; PanelYIndex++) {
-		for (int PanelXIndex = 0; PanelXIndex < PANEL_MAX_NUM; PanelXIndex++) {
-			if (Collision::Rect(anspanelInfo[PanelYIndex][PanelXIndex].x, anspanelInfo[PanelYIndex][PanelXIndex].y, PANEL_SIZE, PANEL_SIZE,
-				MousePosx, MousePosy, 1, 1)) {
-				// 反転を左上から始める
-				InversionXpos = PanelXIndex - 1;
-				InversionYpos = PanelYIndex - 1;
+	int MousePosX, MousePosY;
 
-				// 反転を始める
-				isInside = true;
+	GetMousePoint(&MousePosX, &MousePosY);
+
+	if (Input::Mouse::Push(MOUSE_INPUT_LEFT)) {
+		for (int PanelYIndex = 0; PanelYIndex < PANEL_MAX_NUM; PanelYIndex++) {
+			for (int PanelXIndex = 0; PanelXIndex < PANEL_MAX_NUM; PanelXIndex++) {
+				if (Collision::Rect(anspanelInfo[PanelYIndex][PanelXIndex].x, anspanelInfo[PanelYIndex][PanelXIndex].y, PANEL_SIZE, PANEL_SIZE,
+					MousePosX, MousePosY, 1, 1)) {
+					// 反転を左上から始める
+					InversionXpos = PanelXIndex - 1;
+					InversionYpos = PanelYIndex - 1;
+
+					// 反転を始める
+					isInside = true;
+				}
 			}
 		}
 	}
