@@ -94,4 +94,7 @@ public:
 
 	// パネル反転用
 	void InversionPanel();
+
+	// パネルの模様が一致しているか
+	void PanelPatternMatch();
 };

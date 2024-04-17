@@ -2,6 +2,7 @@
 #include "DxLib.h"
 #include "../Collision/Collision.h"
 #include "../Input/Input.h"
+#include "../Scene/Scene.h"
 
 // コンストラクタ
 Panel::Panel()
@@ -71,7 +72,7 @@ void Panel::Init()
 			}
 
 			// パネルの模様保存用
-			problempanelInfo[PanelYIndex][PanelXIndex].Panelpattern = PANEL_PATTERN_NORMAL;
+			problempanelInfo[PanelYIndex][PanelXIndex].Panelpattern = PANEL_PATTERN_INSIDE;
 			anspanelInfo[PanelYIndex][PanelXIndex].Panelpattern = PANEL_PATTERN_NORMAL;
 
 			// 座標
@@ -120,6 +121,9 @@ void Panel::Step()
 
 	// パネル反転用
 	InversionPanel();
+
+	// パネルの模様が一致しているか
+	PanelPatternMatch();
 }
 
 // パネルの描画
@@ -169,11 +173,16 @@ void Panel::PaneltoMouseCollision()
 
 	GetMousePoint(&MousePosX, &MousePosY);
 
-	if (Input::Mouse::Push(MOUSE_INPUT_LEFT)) {
-		for (int PanelYIndex = 0; PanelYIndex < PANEL_X_NUM; PanelYIndex++) {
-			for (int PanelXIndex = 0; PanelXIndex < PANEL_Y_NUM; PanelXIndex++) {
-				if (Collision::Rect(anspanelInfo[PanelYIndex][PanelXIndex].x, anspanelInfo[PanelYIndex][PanelXIndex].y, PANEL_SIZE, PANEL_SIZE,
+	for (int PanelYIndex = 0; PanelYIndex < PANEL_X_NUM; PanelYIndex++) {
+		for (int PanelXIndex = 0; PanelXIndex < PANEL_Y_NUM; PanelXIndex++) {
+			if (Collision::Rect(anspanelInfo[PanelYIndex][PanelXIndex].x, anspanelInfo[PanelYIndex][PanelXIndex].y, PANEL_SIZE, PANEL_SIZE,
 					MousePosX, MousePosY, 1, 1)) {
+				// マウスカーソルがパネルに当たっているなら囲う
+				// 仮でここに直接書いてる
+				DrawLineBox(anspanelInfo[PanelYIndex][PanelXIndex].x, anspanelInfo[PanelYIndex][PanelXIndex].y,
+					anspanelInfo[PanelYIndex][PanelXIndex].x + PANEL_SIZE, anspanelInfo[PanelYIndex][PanelXIndex].y + PANEL_SIZE, GetColor(255, 255, 255));
+
+				if (Input::Mouse::Push(MOUSE_INPUT_LEFT)) {
 					// 反転を左上から始める
 					InversionXpos = PanelXIndex - 1;
 					InversionYpos = PanelYIndex - 1;
@@ -192,21 +201,11 @@ void Panel::InversionPanel()
 {
 	if (isInside) {	// 反転開始
 		for (int PanelYIndex = InversionYpos; PanelYIndex < InversionYpos + 3; PanelYIndex++) {
-			if (PanelYIndex < 0) {
-				continue;
-			}
-			if (PanelYIndex >= PANEL_Y_NUM) {
-				break;
-			}
 			for (int PanelXIndex = InversionXpos; PanelXIndex < InversionXpos + 3; PanelXIndex++) {
-				if (PanelXIndex < 0) {
+				// 反転する場所がパネルの範囲外なら飛ばす
+				if (PanelYIndex < 0 || PanelYIndex >= PANEL_Y_NUM || PanelXIndex < 0 || PanelXIndex >= PANEL_X_NUM) {
 					continue;
 				}
-				if (PanelXIndex >= PANEL_X_NUM) {
-					PanelXIndex = InversionXpos;
-					break;
-				}
-
 				if (anspanelInfo[PanelYIndex][PanelXIndex].Panelpattern == PANEL_PATTERN_NORMAL) {
 					anspanelInfo[PanelYIndex][PanelXIndex].Panelpattern = PANEL_PATTERN_INSIDE;
 				}
@@ -219,4 +218,22 @@ void Panel::InversionPanel()
 
 	// 反転を終わらせる
 	isInside = false;
+}
+
+// パネルの模様が一致しているか
+void Panel::PanelPatternMatch()
+{
+	for (int PanelYIndex = 0; PanelYIndex < PANEL_X_NUM; PanelYIndex++) {
+		for (int PanelXIndex = 0; PanelXIndex < PANEL_Y_NUM; PanelXIndex++) {
+			// ひとつでも一致しないならbreakする
+			if (anspanelInfo[PanelYIndex][PanelXIndex].Panelpattern != problempanelInfo[PanelYIndex][PanelXIndex].Panelpattern) {
+				break;
+			}
+
+			// すべて一致するならリザルトへ
+			if (PanelXIndex == PANEL_X_NUM - 1 && PanelYIndex == PANEL_Y_NUM - 1) {
+				g_CurrentSceneID = SCENE_ID_INIT_RESULT;
+			}
+		}
+	}
 }
