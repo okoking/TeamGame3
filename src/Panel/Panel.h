@@ -64,25 +64,48 @@ enum QUESTION_TYPE
 };
 
 //csvのファイルパス
-const char CsvFilePath[QUESTION_LEVEL_NUM][QUESTION_TYPE_NUM][256] =
+// 問題の方
+const char QuestionCsvFilePath[QUESTION_LEVEL_NUM][QUESTION_TYPE_NUM][256] =
 {
 	// QUESTION_LEVEL_44
 	{
-		"Data/csv/44/Question1.csv",	// QUESTION_TYPE_1
-		"Data/csv/44/Question2.csv",	// QUESTION_TYPE_2
+		"Data/csv/question/44/Question1.csv",	// QUESTION_TYPE_1
+		"Data/csv/question/44/Question2.csv",	// QUESTION_TYPE_2
 	},
 
 	// QUESTION_LEVEL_55
 	{
-		"Data/csv/55/Question1.csv",	// QUESTION_TYPE_1
-		"Data/csv/55/Question2.csv",	// QUESTION_TYPE_2
+		"Data/csv/question/55/Question1.csv",	// QUESTION_TYPE_1
+		"Data/csv/question/55/Question2.csv",	// QUESTION_TYPE_2
 
 	},
 
 	// QUESTION_LEVEL_66
 	{
-		"Data/csv/66/Question1.csv",	// QUESTION_TYPE_1
-		"Data/csv/66/Question2.csv",	// QUESTION_TYPE_2
+		"Data/csv/question/66/Question1.csv",	// QUESTION_TYPE_1
+		"Data/csv/question/66/Question2.csv",	// QUESTION_TYPE_2
+	},
+};
+// 回答の方
+const char AnsCsvFilePath[QUESTION_LEVEL_NUM][QUESTION_TYPE_NUM][256] =
+{
+	// QUESTION_LEVEL_44
+	{
+		"Data/csv/ans/44/ans1.csv",	// QUESTION_TYPE_1
+		"Data/csv/ans/44/ans2.csv",	// QUESTION_TYPE_2
+	},
+
+	// QUESTION_LEVEL_55
+	{
+		"Data/csv/ans/55/ans1.csv",	// QUESTION_TYPE_1
+		"Data/csv/ans/55/ans2.csv",	// QUESTION_TYPE_2
+
+	},
+
+	// QUESTION_LEVEL_66
+	{
+		"Data/csv/ans/66/ans1.csv",	// QUESTION_TYPE_1
+		"Data/csv/ans/66/ans2.csv",	// QUESTION_TYPE_2
 	},
 };
 

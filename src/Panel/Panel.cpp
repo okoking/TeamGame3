@@ -131,7 +131,9 @@ void Panel::Load()
 			questionpanelInfo[PanelYIndex][PanelXIndex].handle[PANEL_PATTERN_INSIDE] = LoadGraph(INSIDEPANEL_PATH);
 			anspanelInfo[PanelYIndex][PanelXIndex].handle[PANEL_PATTERN_INSIDE] = LoadGraph(INSIDEPANEL_PATH);
 
+			// 読み込んだデータを代入
 			questionpanelInfo[PanelYIndex][PanelXIndex].Panelpattern = (PANEL_PATTERN)questionpanelInfo[PanelYIndex][PanelXIndex].m_FileReadLevelData;
+			anspanelInfo[PanelYIndex][PanelXIndex].Panelpattern = (PANEL_PATTERN)anspanelInfo[PanelYIndex][PanelXIndex].m_FileReadLevelData;
 		}
 	}
 }
@@ -141,14 +143,39 @@ void Panel::ReadFile()
 {
 	FILE* fp;
 
-	fopen_s(&fp, CsvFilePath[questionLevel][questionType], "r");
+	fopen_s(&fp, QuestionCsvFilePath[questionLevel][questionType], "r");
 
 	int mapIndexX = 0;
-	int mapIndexY = -1;
+	int mapIndexY = 0;
 
 	while (true) {
 		// 数値部分を読み込む
 		fscanf_s(fp, "%d", &questionpanelInfo[mapIndexY][mapIndexX].m_FileReadLevelData);
+		mapIndexX++;
+
+		// 「,」を飛ばすために読み込みを実行
+		char chara = fgetc(fp);
+
+		// EOFの場合は読み込み終了
+		if (chara == EOF) {
+			break;
+		}
+
+		// 改行コードの場合は保存先を変更する
+		if (chara == '\n') {
+			mapIndexY++;
+			mapIndexX = 0;
+		}
+	}
+
+	fopen_s(&fp, AnsCsvFilePath[questionLevel][questionType], "r");
+
+	mapIndexX = 0;
+	mapIndexY = 0;
+
+	while (true) {
+		// 数値部分を読み込む
+		fscanf_s(fp, "%d", &anspanelInfo[mapIndexY][mapIndexX].m_FileReadLevelData);
 		mapIndexX++;
 
 		// 「,」を飛ばすために読み込みを実行
@@ -261,11 +288,12 @@ void Panel::InversionPanel()
 	if (isInside) {	// 反転開始
 		for (int PanelYIndex = InversionYpos; PanelYIndex < InversionYpos + 3; PanelYIndex++) {
 			for (int PanelXIndex = InversionXpos; PanelXIndex < InversionXpos + 3; PanelXIndex++) {
+				// 反転する場所がパネルの範囲外なら飛ばす
+				if (PanelYIndex < 0 || PanelYIndex >= PANEL_Y_MAX_NUM || PanelXIndex < 0 || PanelXIndex >= PANEL_X_MAX_NUM) {
+					continue;
+				}
+
 				if (anspanelInfo[PanelYIndex][PanelXIndex].isUse) {
-					// 反転する場所がパネルの範囲外なら飛ばす
-					if (PanelYIndex < 0 || PanelYIndex >= PANEL_Y_MAX_NUM || PanelXIndex < 0 || PanelXIndex >= PANEL_X_MAX_NUM) {
-						continue;
-					}
 
 					if (anspanelInfo[PanelYIndex][PanelXIndex].Panelpattern == PANEL_PATTERN_NORMAL) {
 						anspanelInfo[PanelYIndex][PanelXIndex].Panelpattern = PANEL_PATTERN_INSIDE;
