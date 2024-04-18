@@ -24,6 +24,8 @@ const char INSIDEPANEL_PATH[] = { "data/play/パネル裏.png" };
 // 画像サイズ
 const int PANEL_SIZE = 40;
 
+// 初期体力
+const int INIT_HP = 3;
 
 // csv関係===========================================
 // 問題の難易度
@@ -63,7 +65,7 @@ enum QUESTION_TYPE
 	QUESTION_TYPE_NUM,
 };
 
-//csvのファイルパス
+// csvのファイルパス
 // 問題の方
 const char QuestionCsvFilePath[QUESTION_LEVEL_NUM][QUESTION_TYPE_NUM][256] =
 {
@@ -143,8 +145,6 @@ struct PanelInfo
 
 	int x, y;			// 座標
 	bool isUse;			// 使用中フラグ
-	bool isInversion;	// パネル回転中フラグ
-	bool isInversioned; // 回転終了確認フラグ
 };
 
 class Panel
@@ -157,9 +157,18 @@ private:
 
 	bool isInside;	// 回転させるかどうか
 
+	bool isInversion;	// パネル回転中フラグ
+	bool isInversioned; // 回転終了確認フラグ
+
 	// 問題決め用
 	QUESTION_LEVEL questionLevel;
 	QUESTION_TYPE questionType;
+
+	// 残り手数カウント用
+	int StepCnt;
+
+	// 残りHP 
+	int HP;
 
 public:
 	Panel();
@@ -198,11 +207,11 @@ public:
 	// 回答するパネルの模様を取得
 	PANEL_PATTERN GetPanelAngle(int _xindex, int _yindex) const { return anspanelInfo[_xindex][_yindex].Panelpattern; }
 
-	// パネルのランダム要素をリセット
-	void ResetPanel(int _xindex, int _yindex);
+	// パネルの要素をリセット
+	void ResetPanel();
 
 	// 回転中フラグ取得用
-	bool GetisInversion(int _xindex, int _yindex) const { return anspanelInfo[_xindex][_yindex].isInversion; }
+	bool GetisInversion() const { return isInversion; }
 
 	// パネルとマウスの当たり判定
 	void PaneltoMouseCollision();
@@ -212,4 +221,10 @@ public:
 
 	// パネルの模様が一致しているか
 	void PanelPatternMatch();
+
+	// 体力の処理
+	void StepHp();
+
+	// 次の問題に向かう処理
+	void NextQuestion();
 };

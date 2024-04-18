@@ -4,6 +4,8 @@
 #include "../Input/Input.h"
 #include "../Scene/Scene.h"
 
+int g_FrameCnt = 0;
+
 // コンストラクタ
 Panel::Panel()
 {
@@ -14,9 +16,21 @@ Panel::Panel()
 	// 回転させるかどうか
 	isInside = false;
 
+	// パネル回転中フラグ
+	isInversion = false;
+
+	// 回転終了確認フラグ
+	isInversioned = false;
+
 	// 問題決め用
 	questionLevel = (QUESTION_LEVEL)-1;
 	questionType = (QUESTION_TYPE)-1;
+
+	// 手数カウント用
+	StepCnt = -1;
+
+	// 残りHP 
+	HP = -1;
 
 	for (int PanelYIndex = 0; PanelYIndex < PANEL_Y_MAX_NUM; PanelYIndex++) {
 		for (int PanelXIndex = 0; PanelXIndex < PANEL_X_MAX_NUM; PanelXIndex++) {
@@ -40,14 +54,6 @@ Panel::Panel()
 			// 使用中フラグ
 			questionpanelInfo[PanelYIndex][PanelXIndex].isUse = false;
 			anspanelInfo[PanelYIndex][PanelXIndex].isUse = false;
-
-			// パネル回転中フラグ
-			questionpanelInfo[PanelYIndex][PanelXIndex].isInversion = false;
-			anspanelInfo[PanelYIndex][PanelXIndex].isInversion = false;
-
-			// 回転終了確認フラグ
-			questionpanelInfo[PanelYIndex][PanelXIndex].isInversioned = false;
-			anspanelInfo[PanelYIndex][PanelXIndex].isInversioned = false;
 
 			// ファイル読み込み用
 			questionpanelInfo[PanelYIndex][PanelXIndex].m_FileReadLevelData = -1;
@@ -74,6 +80,18 @@ void Panel::Init()
 	questionLevel = QUESTION_LEVEL_44;
 	questionType = QUESTION_TYPE_1;
 
+	// 残り手数カウント用
+	StepCnt = STEP_NUM[questionLevel][questionType];
+
+	// 残りHP 
+	HP = INIT_HP;
+
+	// パネル回転中フラグ
+	isInversion = false;
+
+	// 回転終了確認フラグ
+	isInversioned = true;
+
 	for (int PanelYIndex = 0; PanelYIndex < PANEL_Y_MAX_NUM; PanelYIndex++) {
 		for (int PanelXIndex = 0; PanelXIndex < PANEL_X_MAX_NUM; PanelXIndex++) {
 			for (int PanelPatternindex = 0; PanelPatternindex < PANEL_PATTERN_NUM; PanelPatternindex++) {
@@ -99,14 +117,6 @@ void Panel::Init()
 				questionpanelInfo[PanelYIndex][PanelXIndex].isUse = true;
 				anspanelInfo[PanelYIndex][PanelXIndex].isUse = true;
 			}
-
-			// パネル回転中フラグ
-			questionpanelInfo[PanelYIndex][PanelXIndex].isInversion = false;
-			anspanelInfo[PanelYIndex][PanelXIndex].isInversion = false;
-
-			// 回転終了確認フラグ
-			questionpanelInfo[PanelYIndex][PanelXIndex].isInversioned = true;
-			anspanelInfo[PanelYIndex][PanelXIndex].isInversioned = true;
 
 			// ファイル読み込み用
 			questionpanelInfo[PanelYIndex][PanelXIndex].m_FileReadLevelData = PANEL_PATTERN_NORMAL;
@@ -207,6 +217,9 @@ void Panel::Step()
 
 	// パネルの模様が一致しているか
 	PanelPatternMatch();
+
+	// 体力の処理
+	StepHp();
 }
 
 // パネルの描画
@@ -214,16 +227,24 @@ void Panel::Draw()
 {
 	for (int PanelYIndex = 0; PanelYIndex < PANEL_Y_MAX_NUM; PanelYIndex++) {
 		for (int PanelXIndex = 0; PanelXIndex < PANEL_X_MAX_NUM; PanelXIndex++) {
+			// 問題
 			if (questionpanelInfo[PanelYIndex][PanelXIndex].isUse) {
 				DrawGraph(questionpanelInfo[PanelYIndex][PanelXIndex].x, questionpanelInfo[PanelYIndex][PanelXIndex].y,
 					questionpanelInfo[PanelYIndex][PanelXIndex].handle[questionpanelInfo[PanelYIndex][PanelXIndex].Panelpattern], true);
 			}
 
+			// 回答
 			if (anspanelInfo[PanelYIndex][PanelXIndex].isUse) {
 				DrawGraph(anspanelInfo[PanelYIndex][PanelXIndex].x, anspanelInfo[PanelYIndex][PanelXIndex].y,
 					anspanelInfo[PanelYIndex][PanelXIndex].handle[anspanelInfo[PanelYIndex][PanelXIndex].Panelpattern], true);
 			}
 
+			// 残りHPと手数の表示
+			//文字の大きさを変更
+			SetFontSize(32);
+
+			DrawFormatString(0, 0, GetColor(255, 255, 255), "残りHP：%d", HP, true);
+			DrawFormatString(0, 32, GetColor(255, 255, 255), "残り手数：%d", StepCnt, true);
 		}
 	}
 }
@@ -244,9 +265,18 @@ void Panel::Fin()
 	}
 }
 
-// パネルのランダム要素をリセット
-void Panel::ResetPanel(int _xindex, int _yindex)
+// パネルの要素をリセット
+void Panel::ResetPanel()
 {
+	// 残り手数カウント初期化
+	StepCnt = STEP_NUM[questionLevel][questionType];
+
+	for (int PanelYIndex = 0; PanelYIndex < PANEL_Y_MAX_NUM; PanelYIndex++) {
+		for (int PanelXIndex = 0; PanelXIndex < PANEL_X_MAX_NUM; PanelXIndex++) {
+			// 読み込んだデータを代入
+			anspanelInfo[PanelYIndex][PanelXIndex].Panelpattern = (PANEL_PATTERN)anspanelInfo[PanelYIndex][PanelXIndex].m_FileReadLevelData;
+		}
+	}
 }
 
 // パネルとマウスの当たり判定
@@ -274,6 +304,9 @@ void Panel::PaneltoMouseCollision()
 
 						// 反転を始める
 						isInside = true;
+
+						// 残り手数カウントデクリメント
+						StepCnt--;
 					}
 				}
 			}
@@ -294,17 +327,14 @@ void Panel::InversionPanel()
 				}
 
 				if (anspanelInfo[PanelYIndex][PanelXIndex].isUse) {
-
 					if (anspanelInfo[PanelYIndex][PanelXIndex].Panelpattern == PANEL_PATTERN_NORMAL) {
 						anspanelInfo[PanelYIndex][PanelXIndex].Panelpattern = PANEL_PATTERN_INSIDE;
-						// 反転を終わらせる
-						isInside = false;
 					}
 					else {
 						anspanelInfo[PanelYIndex][PanelXIndex].Panelpattern = PANEL_PATTERN_NORMAL;
-						// 反転を終わらせる
-						isInside = false;
 					}
+					// 反転を終わらせる
+					isInside = false;
 				}
 			}
 		}
@@ -325,11 +355,44 @@ void Panel::PanelPatternMatch()
 				}
 				
 				Cnt++;
-				// すべて一致するならリザルトへ
+				// すべて一致するなら次の問題へ
 				if (Cnt == PANEL_Y_NUM[questionLevel]* PANEL_X_NUM[questionLevel]) {
-					g_CurrentSceneID = SCENE_ID_INIT_RESULT;
+					// 次の問題に向かう処理
+					NextQuestion();
 				}
 			}
 		}
 	}
+}
+
+// 体力の処理
+void Panel::StepHp()
+{
+	// 残り手数が0なら実行
+	if (StepCnt == 0) {
+		// 3秒経つまで処理を遅らせる
+		if (g_FrameCnt > 180) {
+			g_FrameCnt = 0;
+			HP--;
+
+			if (HP == 0) {
+				// 体力がなくなったならリザルトへ
+				g_CurrentSceneID = SCENE_ID_INIT_RESULT;
+			}
+
+			// パネルの要素をリセット
+			ResetPanel();
+		}
+		// 加算
+		g_FrameCnt++;
+	}
+
+}
+
+// 次の問題に向かう処理
+void Panel::NextQuestion()
+{
+	// プレイ初期化シーンへ
+	g_CurrentSceneID = SCENE_ID_INIT_PLAY;
+
 }
