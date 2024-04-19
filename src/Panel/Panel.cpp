@@ -245,6 +245,7 @@ void Panel::Draw()
 
 			DrawFormatString(0, 0, GetColor(255, 255, 255), "残りHP：%d", HP, true);
 			DrawFormatString(0, 32, GetColor(255, 255, 255), "残り手数：%d", StepCnt, true);
+			DrawFormatString(0, 64, GetColor(255, 255, 255), "g_FrameCnt：%d", g_FrameCnt, true);
 		}
 	}
 }
@@ -282,37 +283,38 @@ void Panel::ResetPanel()
 // パネルとマウスの当たり判定
 void Panel::PaneltoMouseCollision()
 {
-	int MousePosX, MousePosY;
+	// 回転しているならとらない
+	if (g_FrameCnt == 0) {
+		int MousePosX, MousePosY;
 
-	GetMousePoint(&MousePosX, &MousePosY);
+		GetMousePoint(&MousePosX, &MousePosY);
 
+		for (int PanelYIndex = 0; PanelYIndex < PANEL_Y_MAX_NUM; PanelYIndex++) {
+			for (int PanelXIndex = 0; PanelXIndex < PANEL_X_MAX_NUM; PanelXIndex++) {
+				if (anspanelInfo[PanelYIndex][PanelXIndex].isUse) {
+					if (Collision::Rect(anspanelInfo[PanelYIndex][PanelXIndex].x, anspanelInfo[PanelYIndex][PanelXIndex].y, PANEL_SIZE, PANEL_SIZE,
+						MousePosX, MousePosY, 1, 1)) {
+						// マウスカーソルがパネルに当たっているなら囲う
+						// 仮でここに直接書いてる
+						DrawLineBox(anspanelInfo[PanelYIndex][PanelXIndex].x, anspanelInfo[PanelYIndex][PanelXIndex].y,
+							anspanelInfo[PanelYIndex][PanelXIndex].x + PANEL_SIZE, anspanelInfo[PanelYIndex][PanelXIndex].y + PANEL_SIZE, GetColor(255, 255, 255));
 
-	for (int PanelYIndex = 0; PanelYIndex < PANEL_Y_MAX_NUM; PanelYIndex++) {
-		for (int PanelXIndex = 0; PanelXIndex < PANEL_X_MAX_NUM; PanelXIndex++) {
-			if (anspanelInfo[PanelYIndex][PanelXIndex].isUse) {
-				if (Collision::Rect(anspanelInfo[PanelYIndex][PanelXIndex].x, anspanelInfo[PanelYIndex][PanelXIndex].y, PANEL_SIZE, PANEL_SIZE,
-					MousePosX, MousePosY, 1, 1)) {
-					// マウスカーソルがパネルに当たっているなら囲う
-					// 仮でここに直接書いてる
-					DrawLineBox(anspanelInfo[PanelYIndex][PanelXIndex].x, anspanelInfo[PanelYIndex][PanelXIndex].y,
-						anspanelInfo[PanelYIndex][PanelXIndex].x + PANEL_SIZE, anspanelInfo[PanelYIndex][PanelXIndex].y + PANEL_SIZE, GetColor(255, 255, 255));
+						if (Input::Mouse::Push(MOUSE_INPUT_LEFT)) {
+							// 反転を左上から始める
+							InversionXpos = PanelXIndex - 1;
+							InversionYpos = PanelYIndex - 1;
 
-					if (Input::Mouse::Push(MOUSE_INPUT_LEFT)) {
-						// 反転を左上から始める
-						InversionXpos = PanelXIndex - 1;
-						InversionYpos = PanelYIndex - 1;
+							// 反転を始める
+							isInside = true;
 
-						// 反転を始める
-						isInside = true;
-
-						// 残り手数カウントデクリメント
-						StepCnt--;
+							// 残り手数カウントデクリメント
+							StepCnt--;
+						}
 					}
 				}
 			}
 		}
 	}
-
 }
 
 // パネル反転用
@@ -339,7 +341,6 @@ void Panel::InversionPanel()
 			}
 		}
 	}
-
 }
 
 // パネルの模様が一致しているか
@@ -368,10 +369,14 @@ void Panel::PanelPatternMatch()
 // 体力の処理
 void Panel::StepHp()
 {
+	if (StepCnt < 0) {
+		StepCnt = 0;
+	}
+
 	// 残り手数が0なら実行
 	if (StepCnt == 0) {
 		// 3秒経つまで処理を遅らせる
-		if (g_FrameCnt > 180) {
+		if (g_FrameCnt == 180) {
 			g_FrameCnt = 0;
 			HP--;
 
@@ -383,10 +388,15 @@ void Panel::StepHp()
 			// パネルの要素をリセット
 			ResetPanel();
 		}
-		// 加算
-		g_FrameCnt++;
-	}
+		else {
+			// 加算
+			g_FrameCnt++;
+		}
 
+		if (g_FrameCnt > 180) {
+			g_FrameCnt = 180;
+		}
+	}
 }
 
 // 次の問題に向かう処理

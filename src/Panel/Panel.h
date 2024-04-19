@@ -22,7 +22,7 @@ const char NORMALPANEL_PATH[] = { "data/play/パネル表.png" };
 const char INSIDEPANEL_PATH[] = { "data/play/パネル裏.png" };
 
 // 画像サイズ
-const int PANEL_SIZE = 40;
+const int PANEL_SIZE = 64;
 
 // 初期体力
 const int INIT_HP = 3;
