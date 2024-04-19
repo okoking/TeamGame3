@@ -1,5 +1,5 @@
 #pragma once
-
+#include "../Scene/Scene.h"
 // パネルの模様
 enum PANEL_PATTERN {
 	PANEL_PATTERN_NORMAL = 0,	// 通常
@@ -28,16 +28,6 @@ const int PANEL_SIZE = 64;
 const int INIT_HP = 3;
 
 // csv関係===========================================
-// 問題の難易度
-enum QUESTION_LEVEL
-{
-	QUESTION_LEVEL_44 = 0,	// 4×4マス
-	QUESTION_LEVEL_55,		// 5×5マス
-	QUESTION_LEVEL_66,		// 6×6マス
-
-	QUESTION_LEVEL_NUM,
-};
-
 // パネルの配置
 const int PANEL_X_MAX_NUM = 6;
 const int PANEL_Y_MAX_NUM = 6;

@@ -2,7 +2,6 @@
 #include "DxLib.h"
 #include "../Collision/Collision.h"
 #include "../Input/Input.h"
-#include "../Scene/Scene.h"
 
 int g_FrameCnt = 0;
 

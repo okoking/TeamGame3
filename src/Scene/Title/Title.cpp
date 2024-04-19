@@ -7,7 +7,7 @@
 SCENE_ID g_CurrentSceneID;	//シーン変数
 
 //ゲームモード
-GAME_MODE g_GameModeID;
+QUESTION_LEVEL g_QuestonLevelID;
 
 //初期化
 void Title::Init()
@@ -43,7 +43,7 @@ void Title::Init()
 	g_CurrentSceneID = SCENE_ID_LOOP_TITLE;
 
 	//ゲームモードを初期化
-	g_GameModeID = GAME_MODE_EASY;
+	g_QuestonLevelID = QUESTION_LEVEL_44;
 }
 
 //通常処理
@@ -115,6 +115,10 @@ void Title::Step()
 		//エンターキーで画面変化
 		if (Input::Key::Push(KEY_INPUT_RETURN))
 		{
+			// 仮として終了処理へ==================
+			g_CurrentSceneID = SCENE_ID_FIN_TITLE;
+			//=====================================
+			
 			//se
 			Sound::Se::Play(SE_SYSTEM);
 
@@ -140,34 +144,34 @@ void Title::Step()
 				}
 			}
 
-			if (loop == 3)
-			{
-				//終了処理へ
-				g_CurrentSceneID = SCENE_ID_FIN_TITLE;
-			}
+			//if (loop == 3)
+			//{
+			//	//終了処理へ
+			//	g_CurrentSceneID = SCENE_ID_FIN_TITLE;
+			//}
 		}
 
 		//矢印キーで状態変化
-		if (g_GameModeID != GAME_MODE_EASY) {
+		if (g_QuestonLevelID != QUESTION_LEVEL_44) {
 			if (Input::Key::Push(KEY_INPUT_LEFT))
 			{
 				//se
 				Sound::Se::Play(SE_SYSTEM);
-				if (g_GameModeID == GAME_MODE_HARD)
-					g_GameModeID = GAME_MODE_NORMAL;
+				if (g_QuestonLevelID == QUESTION_LEVEL_66)
+					g_QuestonLevelID = QUESTION_LEVEL_55;
 				else
-					g_GameModeID = GAME_MODE_EASY;
+					g_QuestonLevelID = QUESTION_LEVEL_44;
 			}
 		}
-		if (g_GameModeID != GAME_MODE_HARD) {
+		if (g_QuestonLevelID != QUESTION_LEVEL_66) {
 			if (Input::Key::Push(KEY_INPUT_RIGHT))
 			{
 				//se
 				Sound::Se::Play(SE_SYSTEM);
-				if (g_GameModeID == GAME_MODE_EASY)
-					g_GameModeID = GAME_MODE_NORMAL;
+				if (g_QuestonLevelID == QUESTION_LEVEL_44)
+					g_QuestonLevelID = QUESTION_LEVEL_55;
 				else
-					g_GameModeID = GAME_MODE_HARD;
+					g_QuestonLevelID = QUESTION_LEVEL_66;
 			}
 		}
 	}
@@ -187,7 +191,7 @@ void Title::Draw()//1280 720
 	{
 		//難易度
 		SetDrawBlendMode(DX_BLENDMODE_ADD, bright);
-		DrawRotaGraph(640, 360, 0.75f, 0.0f, imageHandle[TITLE_EASY + g_GameModeID], true);
+		//DrawRotaGraph(640, 360, 0.75f, 0.0f, imageHandle[TITLE_EASY + g_QuestonLevelID], true);
 		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 	}
 
@@ -198,7 +202,7 @@ void Title::Draw()//1280 720
 	if (isReach[1])
 	{
 		//矢印
-		if (g_GameModeID != GAME_MODE_NORMAL) {
+		if (g_QuestonLevelID != QUESTION_LEVEL_55) {
 			//fadeで透明度変更
 			SetDrawBlendMode(DX_BLENDMODE_ALPHA, fade[1]);
 			DrawRotaGraph(500, 360, 0.75f, 0.0f, imageHandle[TITLE_ARROW2], true);

@@ -24,14 +24,16 @@ enum SCENE_ID
 
 };
 
-enum GAME_MODE
+// 問題の難易度
+enum QUESTION_LEVEL
 {
-	GAME_MODE_EASY=0,	// ノーマル
-	GAME_MODE_NORMAL,
-	GAME_MODE_HARD,
+	QUESTION_LEVEL_44 = 0,	// 4×4マス
+	QUESTION_LEVEL_55,		// 5×5マス
+	QUESTION_LEVEL_66,		// 6×6マス
 
-	GAME_MODE_NUM,
+	QUESTION_LEVEL_NUM,
 };
 
+
 extern SCENE_ID g_CurrentSceneID;
-extern GAME_MODE g_GameModeID;
+extern QUESTION_LEVEL g_QuestonLevelID;
