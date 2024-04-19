@@ -9,37 +9,37 @@ AnimeClass animeInfo[ANIME_TYPE_NUM];
 //ファイルパス
 const char animeFilePath[ANIME_TYPE_NUM][256] =
 {
-	"",	//
+	"",	// 
 };
 
 //アニメ数
 const int animeImgNum[ANIME_TYPE_NUM] =
 {
-	0,	//
+	0,	// 
 };
 
 //画像分割数 [0] = x, [1] = y
 const int animeImageSplitNum[ANIME_TYPE_NUM][2] =
 {
-	{0,0},	//
+	{0,0},	// 
 };
 
 //画像サイズ [0] = x, [1] = y
 const int animeImageSize[ANIME_TYPE_NUM][2] =
 {
-	{0,0},	//
+	{0,0},	// 
 };
 
 //アニメ画像切り替え時間
 const float animwChageTime[ANIME_TYPE_NUM] =
 {
-	0.1f,	//
+	0.1f,	// 
 };
 
 //再生タイプ　ループするか
 const bool animeLoop[ANIME_TYPE_NUM] =
 {
-	true,	//
+	true,	// 
 };
 
 //==============================================================================================

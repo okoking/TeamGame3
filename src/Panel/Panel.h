@@ -1,5 +1,6 @@
 #pragma once
 #include "../Scene/Scene.h"
+
 // ƒpƒlƒ‹‚Ì–Í—l
 enum PANEL_PATTERN {
 	PANEL_PATTERN_NORMAL = 0,	// ’Êí

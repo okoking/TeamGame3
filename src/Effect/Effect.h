@@ -6,14 +6,14 @@
 const int EFFECT_MAX_NUM = 200;
 
 //エフェクトのアニメ最大数
-const int EFFECT_ANIME_MAX_NUM = 10;
+const int EFFECT_ANIME_MAX_NUM = 20;
 
 //==============================================================================================
 
 //エフェクトの種類
 enum EFFECT_TYPE
 {
-	EFFECT_TYPE_RIPPLE = 0,		//波紋
+	EFFECT_TYPE_NORMAL,			//通常
 
 	//=============ｹﾞｰﾑ=============
 

@@ -8,7 +8,7 @@
 //アニメの種類
 enum ANIME_TYPE
 {
-	ANIME_FIRST,	//
+	ANIME_FIRST,
 
 	ANIME_TYPE_NUM,				//アニメの数
 };

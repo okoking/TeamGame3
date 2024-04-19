@@ -126,7 +126,6 @@ void Panel::Init()
 // データロード
 void Panel::Load()
 {
-
 	// ファイル読み込み
 	ReadFile();
 
@@ -319,6 +318,7 @@ void Panel::PaneltoMouseCollision()
 // パネル反転用
 void Panel::InversionPanel()
 {
+
 	if (isInside) {	// 反転開始
 		for (int PanelYIndex = InversionYpos; PanelYIndex < InversionYpos + 3; PanelYIndex++) {
 			for (int PanelXIndex = InversionXpos; PanelXIndex < InversionXpos + 3; PanelXIndex++) {
