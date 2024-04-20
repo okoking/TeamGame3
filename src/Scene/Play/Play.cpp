@@ -78,7 +78,8 @@ void Play::Fin()
 
 	DeleteGraph(enemyhandle);	// “G‰æ‘œˆ—
 	//gem
-	Sound::Bgm::StopSound(BGM_PLAY);	
+	Sound::Bgm::StopSound(BGM_PLAY);
+
 
 	g_CurrentSceneID = SCENE_ID_INIT_RESULT;
 }

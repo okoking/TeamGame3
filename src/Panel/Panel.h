@@ -1,5 +1,6 @@
 #pragma once
 #include "../Scene/Scene.h"
+#include "../Effect/Effect.h"
 
 // パネルの模様
 enum PANEL_PATTERN {
@@ -19,14 +20,17 @@ enum PANEL_TYPE
 };
 
 // パネルの画像ファイルパス
-const char NORMALPANEL_PATH[] = { "data/play/パネル表.png" };
-const char INSIDEPANEL_PATH[] = { "data/play/パネル裏.png" };
+const char NORMALPANEL_PATH[] = { "data/play/パネル表/パネル表1.png" };
+const char INSIDEPANEL_PATH[] = { "data/play/パネル裏/パネル裏1.png" };
 
 // 画像サイズ
 const int PANEL_SIZE = 64;
 
 // 初期体力
 const int INIT_HP = 3;
+
+// 間違った時の点滅するフレーム
+const int MISSTAKE_MAX_FRAME = 120;
 
 // csv関係===========================================
 // パネルの配置
@@ -136,6 +140,11 @@ struct PanelInfo
 
 	int x, y;			// 座標
 	bool isUse;			// 使用中フラグ
+
+	bool isInversion;	// パネル回転中フラグ
+	bool isInversioned; // 回転終了確認フラグ
+	bool isMissTake;	// 間違っているフラグ
+	int MissTakeCnt;	// 間違ったタイルフレームカウント用
 };
 
 class Panel
@@ -144,12 +153,12 @@ private:
 	PanelInfo questionpanelInfo[PANEL_Y_MAX_NUM][PANEL_X_MAX_NUM];
 	PanelInfo anspanelInfo[PANEL_Y_MAX_NUM][PANEL_X_MAX_NUM];
 
+	// エフェクト
+	Effect effect;
+
 	int InversionXpos, InversionYpos;	// 反転するパネルの座標
 
 	bool isInside;	// 回転させるかどうか
-
-	bool isInversion;	// パネル回転中フラグ
-	bool isInversioned; // 回転終了確認フラグ
 
 	// 問題決め用
 	QUESTION_LEVEL questionLevel;
@@ -161,6 +170,9 @@ private:
 	// 残りHP 
 	int HP;
 
+	// フレームカウント用
+	int FrameCnt;
+	int EffectFrameCnt;
 public:
 	Panel();
 	~Panel();
@@ -202,7 +214,7 @@ public:
 	void ResetPanel();
 
 	// 回転中フラグ取得用
-	bool GetisInversion() const { return isInversion; }
+	bool GetisInversion(int _xindex, int _yindex) const { return anspanelInfo[_xindex][_yindex].isInversion; }
 
 	// パネルとマウスの当たり判定
 	void PaneltoMouseCollision();
@@ -218,4 +230,7 @@ public:
 
 	// 次の問題に向かう処理
 	void NextQuestion();
+
+	// 間違っているとき処理
+	void MissTake();
 };

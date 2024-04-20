@@ -33,7 +33,7 @@ const int animeImageSize[ANIME_TYPE_NUM][2] =
 //アニメ画像切り替え時間
 const float animwChageTime[ANIME_TYPE_NUM] =
 {
-	0.1f,	// 
+	0.05f,	//
 };
 
 //再生タイプ　ループするか

@@ -3,8 +3,6 @@
 #include "../Collision/Collision.h"
 #include "../Input/Input.h"
 
-int g_FrameCnt = 0;
-
 // コンストラクタ
 Panel::Panel()
 {
@@ -14,12 +12,6 @@ Panel::Panel()
 
 	// 回転させるかどうか
 	isInside = false;
-
-	// パネル回転中フラグ
-	isInversion = false;
-
-	// 回転終了確認フラグ
-	isInversioned = false;
 
 	// 問題決め用
 	questionLevel = (QUESTION_LEVEL)-1;
@@ -31,6 +23,10 @@ Panel::Panel()
 	// 残りHP 
 	HP = -1;
 
+	// フレームカウント用
+	FrameCnt = -1;
+	EffectFrameCnt = -1;
+
 	for (int PanelYIndex = 0; PanelYIndex < PANEL_Y_MAX_NUM; PanelYIndex++) {
 		for (int PanelXIndex = 0; PanelXIndex < PANEL_X_MAX_NUM; PanelXIndex++) {
 			for (int PanelPatternindex = 0; PanelPatternindex < PANEL_PATTERN_NUM; PanelPatternindex++) {
@@ -38,6 +34,16 @@ Panel::Panel()
 				questionpanelInfo[PanelYIndex][PanelXIndex].handle[PanelPatternindex] = -1;
 				anspanelInfo[PanelYIndex][PanelXIndex].handle[PanelPatternindex] = -1;
 			}
+
+
+			// パネル回転中フラグ
+			anspanelInfo[PanelYIndex][PanelXIndex].isInversion = false;
+
+			// 回転終了確認フラグ
+			anspanelInfo[PanelYIndex][PanelXIndex].isInversioned = false;
+
+			// 間違っているフラグ
+			anspanelInfo[PanelYIndex][PanelXIndex].isMissTake = false;
 
 			// パネルの模様保存用
 			questionpanelInfo[PanelYIndex][PanelXIndex].Panelpattern = PANEL_PATTERN_NORMAL;
@@ -54,6 +60,8 @@ Panel::Panel()
 			questionpanelInfo[PanelYIndex][PanelXIndex].isUse = false;
 			anspanelInfo[PanelYIndex][PanelXIndex].isUse = false;
 
+			anspanelInfo[PanelYIndex][PanelXIndex].MissTakeCnt = -1;
+
 			// ファイル読み込み用
 			questionpanelInfo[PanelYIndex][PanelXIndex].m_FileReadLevelData = -1;
 		}
@@ -68,6 +76,13 @@ Panel::~Panel()
 // パネル初期化
 void Panel::Init()
 {
+	// フレームカウント用
+	FrameCnt = 0;
+	EffectFrameCnt = 0;
+
+	// エフェクト
+	effect.Init();
+
 	// 反転するパネルの座標
 	InversionXpos = -10;
 	InversionYpos = -10;
@@ -85,12 +100,6 @@ void Panel::Init()
 	// 残りHP 
 	HP = INIT_HP;
 
-	// パネル回転中フラグ
-	isInversion = false;
-
-	// 回転終了確認フラグ
-	isInversioned = true;
-
 	for (int PanelYIndex = 0; PanelYIndex < PANEL_Y_MAX_NUM; PanelYIndex++) {
 		for (int PanelXIndex = 0; PanelXIndex < PANEL_X_MAX_NUM; PanelXIndex++) {
 			for (int PanelPatternindex = 0; PanelPatternindex < PANEL_PATTERN_NUM; PanelPatternindex++) {
@@ -98,6 +107,13 @@ void Panel::Init()
 				questionpanelInfo[PanelYIndex][PanelXIndex].handle[PanelPatternindex] = 0;
 				anspanelInfo[PanelYIndex][PanelXIndex].handle[PanelPatternindex] = 0;
 			}
+			// パネル回転中フラグ
+			anspanelInfo[PanelYIndex][PanelXIndex].isInversion = false;
+
+			// 回転終了確認フラグ
+			anspanelInfo[PanelYIndex][PanelXIndex].isInversioned = true;
+
+			anspanelInfo[PanelYIndex][PanelXIndex].isMissTake = false;	// 間違っているフラグ
 
 			// パネルの模様保存用
 			questionpanelInfo[PanelYIndex][PanelXIndex].Panelpattern = PANEL_PATTERN_NORMAL;
@@ -109,6 +125,8 @@ void Panel::Init()
 
 			anspanelInfo[PanelYIndex][PanelXIndex].x = PANEL_SIZE * PanelXIndex + 400;
 			anspanelInfo[PanelYIndex][PanelXIndex].y = PANEL_SIZE * PanelYIndex + 300;
+			
+			anspanelInfo[PanelYIndex][PanelXIndex].MissTakeCnt = MISSTAKE_MAX_FRAME;
 
 			// 使用中フラグ
 			// レベルにあった範囲をtrueにする
@@ -126,6 +144,10 @@ void Panel::Init()
 // データロード
 void Panel::Load()
 {
+	// エフェクト
+	effect.Load(EFFECT_TYPE_NORMAL, 9);
+	effect.Load(EFFECT_TYPE_INSIDE, 9);
+
 	// ファイル読み込み
 	ReadFile();
 
@@ -207,6 +229,9 @@ void Panel::ReadFile()
 // パネルの通常処理
 void Panel::Step()
 {
+	// エフェクト
+	effect.Step();
+
 	// パネルとマウスの当たり判定
 	PaneltoMouseCollision();
 
@@ -215,6 +240,9 @@ void Panel::Step()
 
 	// パネルの模様が一致しているか
 	PanelPatternMatch();
+
+	// 間違っているとき処理
+	MissTake();
 
 	// 体力の処理
 	StepHp();
@@ -233,24 +261,35 @@ void Panel::Draw()
 
 			// 回答
 			if (anspanelInfo[PanelYIndex][PanelXIndex].isUse) {
-				DrawGraph(anspanelInfo[PanelYIndex][PanelXIndex].x, anspanelInfo[PanelYIndex][PanelXIndex].y,
-					anspanelInfo[PanelYIndex][PanelXIndex].handle[anspanelInfo[PanelYIndex][PanelXIndex].Panelpattern], true);
+				if (!anspanelInfo[PanelYIndex][PanelXIndex].isInversion) {
+					if (anspanelInfo[PanelYIndex][PanelXIndex].MissTakeCnt % 12 < 6) {
+						DrawGraph(anspanelInfo[PanelYIndex][PanelXIndex].x, anspanelInfo[PanelYIndex][PanelXIndex].y,
+							anspanelInfo[PanelYIndex][PanelXIndex].handle[anspanelInfo[PanelYIndex][PanelXIndex].Panelpattern], true);
+					}
+				}
 			}
-
+		
 			// 残りHPと手数の表示
 			//文字の大きさを変更
 			SetFontSize(32);
 
 			DrawFormatString(0, 0, GetColor(255, 255, 255), "残りHP：%d", HP, true);
 			DrawFormatString(0, 32, GetColor(255, 255, 255), "残り手数：%d", StepCnt, true);
-			DrawFormatString(0, 64, GetColor(255, 255, 255), "g_FrameCnt：%d", g_FrameCnt, true);
+			DrawFormatString(0, 64, GetColor(255, 255, 255), "g_FrameCnt：%d", FrameCnt, true);
 		}
 	}
+
+	// エフェクト
+	effect.Draw();
+
 }
 
 // パネル終了処理
 void Panel::Fin()
 {
+	// エフェクト
+	effect.Fin();
+
 	for (int PanelYIndex = 0; PanelYIndex < PANEL_Y_MAX_NUM; PanelYIndex++) {
 		for (int PanelXIndex = 0; PanelXIndex < PANEL_X_MAX_NUM; PanelXIndex++) {
 			//パネルハンドル
@@ -282,7 +321,7 @@ void Panel::ResetPanel()
 void Panel::PaneltoMouseCollision()
 {
 	// 回転しているならとらない
-	if (g_FrameCnt == 0) {
+	if (FrameCnt == 0) {
 		int MousePosX, MousePosY;
 
 		GetMousePoint(&MousePosX, &MousePosY);
@@ -305,6 +344,9 @@ void Panel::PaneltoMouseCollision()
 							// 反転を始める
 							isInside = true;
 
+							// 反転を確認する
+							anspanelInfo[PanelYIndex][PanelXIndex].isInversion = true;
+
 							// 残り手数カウントデクリメント
 							StepCnt--;
 						}
@@ -318,24 +360,53 @@ void Panel::PaneltoMouseCollision()
 // パネル反転用
 void Panel::InversionPanel()
 {
-
 	if (isInside) {	// 反転開始
-		for (int PanelYIndex = InversionYpos; PanelYIndex < InversionYpos + 3; PanelYIndex++) {
-			for (int PanelXIndex = InversionXpos; PanelXIndex < InversionXpos + 3; PanelXIndex++) {
-				// 反転する場所がパネルの範囲外なら飛ばす
-				if (PanelYIndex < 0 || PanelYIndex >= PANEL_Y_MAX_NUM || PanelXIndex < 0 || PanelXIndex >= PANEL_X_MAX_NUM) {
-					continue;
-				}
+		if (EffectFrameCnt == 0) {	// 一周だけ
+			for (int PanelYIndex = InversionYpos; PanelYIndex < InversionYpos + 3; PanelYIndex++) {
+				for (int PanelXIndex = InversionXpos; PanelXIndex < InversionXpos + 3; PanelXIndex++) {
+					// 反転する場所がパネルの範囲外なら飛ばす
+					if (PanelYIndex < 0 || PanelYIndex >= PANEL_Y_MAX_NUM || PanelXIndex < 0 || PanelXIndex >= PANEL_X_MAX_NUM) {
+						continue;
+					}
 
-				if (anspanelInfo[PanelYIndex][PanelXIndex].isUse) {
-					if (anspanelInfo[PanelYIndex][PanelXIndex].Panelpattern == PANEL_PATTERN_NORMAL) {
-						anspanelInfo[PanelYIndex][PanelXIndex].Panelpattern = PANEL_PATTERN_INSIDE;
+					if (anspanelInfo[PanelYIndex][PanelXIndex].isUse) {
+						if (anspanelInfo[PanelYIndex][PanelXIndex].Panelpattern == PANEL_PATTERN_NORMAL) {
+							effect.Play(EFFECT_TYPE_NORMAL,
+								anspanelInfo[PanelYIndex][PanelXIndex].x + PANEL_SIZE / 2, anspanelInfo[PanelYIndex][PanelXIndex].y + PANEL_SIZE / 2);
+							// パネル回転中フラグ
+							anspanelInfo[PanelYIndex][PanelXIndex].isInversion = true;
+
+							anspanelInfo[PanelYIndex][PanelXIndex].Panelpattern = PANEL_PATTERN_INSIDE;
+						}
+						else {
+							effect.Play(EFFECT_TYPE_INSIDE,
+								anspanelInfo[PanelYIndex][PanelXIndex].x + PANEL_SIZE / 2, anspanelInfo[PanelYIndex][PanelXIndex].y + PANEL_SIZE / 2);
+							// パネル回転中フラグ
+							anspanelInfo[PanelYIndex][PanelXIndex].isInversion = true;
+
+							anspanelInfo[PanelYIndex][PanelXIndex].Panelpattern = PANEL_PATTERN_NORMAL;
+						}
 					}
-					else {
-						anspanelInfo[PanelYIndex][PanelXIndex].Panelpattern = PANEL_PATTERN_NORMAL;
+				}
+			}
+		}
+
+		EffectFrameCnt++;
+
+		if (EffectFrameCnt > 25) {
+			// 反転を終わらせる
+			isInside = false;
+			EffectFrameCnt = 0;
+			for (int PanelYIndex = InversionYpos; PanelYIndex < InversionYpos + 3; PanelYIndex++) {
+				for (int PanelXIndex = InversionXpos; PanelXIndex < InversionXpos + 3; PanelXIndex++) {
+					if (anspanelInfo[PanelYIndex][PanelXIndex].isInversion) {
+						anspanelInfo[PanelYIndex][PanelXIndex].isInversion = false;
 					}
-					// 反転を終わらせる
-					isInside = false;
+					// 間違っている部分を出す
+					if (anspanelInfo[PanelYIndex][PanelXIndex].Panelpattern != questionpanelInfo[PanelYIndex][PanelXIndex].Panelpattern) {
+						anspanelInfo[PanelYIndex][PanelXIndex].isMissTake = true;
+						anspanelInfo[PanelYIndex][PanelXIndex].MissTakeCnt = 0;
+					}
 				}
 			}
 		}
@@ -356,7 +427,7 @@ void Panel::PanelPatternMatch()
 				
 				Cnt++;
 				// すべて一致するなら次の問題へ
-				if (Cnt == PANEL_Y_NUM[questionLevel]* PANEL_X_NUM[questionLevel]) {
+				if (Cnt == PANEL_Y_NUM[questionLevel] * PANEL_X_NUM[questionLevel]) {
 					// 次の問題に向かう処理
 					NextQuestion();
 				}
@@ -374,14 +445,15 @@ void Panel::StepHp()
 
 	// 残り手数が0なら実行
 	if (StepCnt == 0) {
-		// 3秒経つまで処理を遅らせる
-		if (g_FrameCnt == 180) {
-			g_FrameCnt = 0;
+		// 2秒経つまで処理を遅らせる
+		if (FrameCnt == MISSTAKE_MAX_FRAME + 25) {
+
+			FrameCnt = 0;
 			HP--;
 
 			if (HP == 0) {
 				// 体力がなくなったならリザルトへ
-				g_CurrentSceneID = SCENE_ID_INIT_RESULT;
+				g_CurrentSceneID = SCENE_ID_FIN_PLAY;
 			}
 
 			// パネルの要素をリセット
@@ -389,11 +461,11 @@ void Panel::StepHp()
 		}
 		else {
 			// 加算
-			g_FrameCnt++;
+			FrameCnt++;
 		}
 
-		if (g_FrameCnt > 180) {
-			g_FrameCnt = 180;
+		if (FrameCnt > MISSTAKE_MAX_FRAME + 25) {
+			FrameCnt = MISSTAKE_MAX_FRAME + 25;
 		}
 	}
 }
@@ -403,5 +475,25 @@ void Panel::NextQuestion()
 {
 	// プレイ初期化シーンへ
 	g_CurrentSceneID = SCENE_ID_INIT_PLAY;
+}
 
+// 間違っているとき処理
+void Panel::MissTake()
+{
+	// 間違っている部分を出す
+	for (int PanelYIndex = 0; PanelYIndex < PANEL_Y_MAX_NUM; PanelYIndex++) {
+		for (int PanelXIndex = 0; PanelXIndex < PANEL_X_MAX_NUM; PanelXIndex++) {
+			if (anspanelInfo[PanelYIndex][PanelXIndex].isMissTake) {
+				if (anspanelInfo[PanelYIndex][PanelXIndex].MissTakeCnt > MISSTAKE_MAX_FRAME) {
+					anspanelInfo[PanelYIndex][PanelXIndex].MissTakeCnt = MISSTAKE_MAX_FRAME;
+				}
+				else if (anspanelInfo[PanelYIndex][PanelXIndex].MissTakeCnt == MISSTAKE_MAX_FRAME) {
+					anspanelInfo[PanelYIndex][PanelXIndex].isMissTake = false;
+				}
+				else if (anspanelInfo[PanelYIndex][PanelXIndex].MissTakeCnt < MISSTAKE_MAX_FRAME) {
+					anspanelInfo[PanelYIndex][PanelXIndex].MissTakeCnt++;
+				}
+			}
+		}
+	}
 }

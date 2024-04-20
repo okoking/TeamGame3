@@ -19,15 +19,15 @@ const char effectFilePath[EFFECT_TYPE_NUM][256] =
 //各エフェクトのアニメ数
 const int effectAnimeImgNum[EFFECT_TYPE_NUM] =
 {
-	14,	//通常
-	14,	//裏
+	9,	//通常
+	9,	//裏
 };
 
 //各エフェクトの画像分割数 [0] = x, [1] = y
 const int effectImageSplitNum[EFFECT_TYPE_NUM][2] =
 {
-	{ 7, 2},	//通常
-	{ 7, 2},	//裏
+	{ 5, 2},	//通常
+	{ 5, 2},	//裏
 };
 
 //エフェクトの画像サイズ
@@ -40,8 +40,8 @@ const int effectImageSize[EFFECT_TYPE_NUM][2] =
 //各エフェクトのアニメ画像切り替え時間
 const float effectChageTime[EFFECT_TYPE_NUM] =
 {
-	0.1f,	//通常
-	0.1f,	//裏
+	0.05f,	//通常
+	0.05f,	//裏
 };
 
 //==============================================================================================
@@ -158,7 +158,7 @@ void Effect::Draw(int type)
 			//システム
 		case 0: {
 
-			if (effectInfo[effect_index].type != EFFECT_TYPE_NORMAL)
+			if (effectInfo[effect_index].type != EFFECT_TYPE_NORMAL && effectInfo[effect_index].type != EFFECT_TYPE_INSIDE)
 			{
 				continue;
 			}

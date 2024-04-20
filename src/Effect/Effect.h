@@ -14,6 +14,7 @@ const int EFFECT_ANIME_MAX_NUM = 20;
 enum EFFECT_TYPE
 {
 	EFFECT_TYPE_NORMAL,			//í èÌ
+	EFFECT_TYPE_INSIDE,			//ó†
 
 	//=============πﬁ∞—=============
 
