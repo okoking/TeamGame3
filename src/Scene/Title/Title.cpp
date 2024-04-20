@@ -26,9 +26,6 @@ void Title::Init()
 	fade[0] = 0;
 	fade[1] = 0;
 
-	//明るさ
-	bright = 0;
-
 	//タイトルの初期Y座標を設定
 	for (int i = 0; i < 2; i++)
 	{
@@ -122,33 +119,8 @@ void Title::Step()
 			//se
 			Sound::Se::Play(SE_SYSTEM);
 
-			FrameCount++;
-
-			int loop = 0;
-
-			if (loop < 3)
-			{
-				if (FrameCount >= FRAME_RATE / 2)
-				{
-					FrameCount = 0;
-					loop++;
-
-					if (bright == 0)
-					{
-						bright = 122;
-					}
-					else if (bright == 122)
-					{
-						bright = 0;
-					}
-				}
-			}
-
-			//if (loop == 3)
-			//{
-			//	//終了処理へ
-			//	g_CurrentSceneID = SCENE_ID_FIN_TITLE;
-			//}
+			//終了処理へ
+			g_CurrentSceneID = SCENE_ID_FIN_TITLE;
 		}
 
 		//矢印キーで状態変化
@@ -190,9 +162,7 @@ void Title::Draw()//1280 720
 	if (isReach[1])
 	{
 		//難易度
-		SetDrawBlendMode(DX_BLENDMODE_ADD, bright);
-		//DrawRotaGraph(640, 360, 0.75f, 0.0f, imageHandle[TITLE_EASY + g_QuestonLevelID], true);
-		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+		DrawRotaGraph(640, 360, 0.75f, 0.0f, imageHandle[TITLE_EASY + g_QuestonLevelID], true);
 	}
 
 	//柱

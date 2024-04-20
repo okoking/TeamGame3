@@ -12,7 +12,6 @@ void Result::Init()
 		//画像読み込み
 		imageHandle[i] = LoadGraph(RESULT_IMAGE_PATH[i]);
 	}
-	RgearAngle = 0;
 
 	//bgm
 	Sound::Bgm::Play(BGM_RESULT);
@@ -25,9 +24,6 @@ void Result::Init()
 //通常処理
 void Result::Step()
 {
-	//ギアの回転
-	RgearAngle += 0.1f;
-
 	//左クリックで以下
 	if (Input::Key::Push(KEY_INPUT_SPACE))
 	{
@@ -46,10 +42,15 @@ void Result::Draw()
 	//背景描画
 	DrawGraph(0, 0, imageHandle[RESULT_BACK_GROUND], true);
 
-	//歯車
-	DrawRotaGraph(10, 10, 0.7, (int)RgearAngle, imageHandle[RESULT_GAER1], true);
-	DrawRotaGraph(-3, 90, 0.3, (int)RgearAngle*-1, imageHandle[RESULT_GAER1], true);
-	DrawRotaGraph(750, 50, 1.1, (int)RgearAngle, imageHandle[RESULT_GAER2], true);
+	//リザルト
+	DrawRotaGraph(640, 75, 1.0f, 0.0f, imageHandle[RESULT_RESULT], true);
+
+	//スコア
+	DrawRotaGraph(640, 200, 1.0f, 0.0f, imageHandle[RESULT_SCORE], true);
+
+	//柱
+	DrawGraph(0, 0, imageHandle[RESULT_PILLAR1], true);
+	DrawGraph(980, 0, imageHandle[RESULT_PILLAR1], true);
 
 
 	//文字の大きさを変更

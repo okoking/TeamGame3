@@ -41,8 +41,6 @@ private:
 
 	int fade[2];	//透明度：スタート 矢印
 
-	int bright;		//明るさ：難易度
-
 	bool lighting;	//入力待ちの点滅
 
 	int progress;	//進行度
