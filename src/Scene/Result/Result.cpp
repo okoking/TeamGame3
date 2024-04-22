@@ -43,10 +43,7 @@ void Result::Draw()
 	DrawGraph(0, 0, imageHandle[RESULT_BACK_GROUND], true);
 
 	//リザルト
-	DrawRotaGraph(640, 75, 1.0f, 0.0f, imageHandle[RESULT_RESULT], true);
-
-	//スコア
-	DrawRotaGraph(640, 200, 1.0f, 0.0f, imageHandle[RESULT_SCORE], true);
+	DrawRotaGraph(640, 360, 0.7f, 0.0f, imageHandle[RESULT_RESULT], true);
 
 	//柱
 	DrawGraph(0, 0, imageHandle[RESULT_PILLAR1], true);

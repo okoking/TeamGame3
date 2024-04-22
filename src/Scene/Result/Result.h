@@ -5,7 +5,6 @@ enum RESULT_IMAGE
 {
 	RESULT_BACK_GROUND,	//背景
 	RESULT_RESULT,		//リザルト
-	RESULT_SCORE,		//スコア
 	RESULT_PILLAR1,		//柱1
 	RESULT_PILLAR2,		//柱2
 
@@ -16,8 +15,7 @@ enum RESULT_IMAGE
 const char RESULT_IMAGE_PATH[RESULT_IMAGE_MAX_NUM][255] =
 {
 	"data/result/resultback.png",	//背景
-	"data/result/text1.png",		//リザルト
-	"data/result/text2.png",		//スコア
+	"data/result/GameEnd.png",		//リザルト
 	"data/result/resultpillar.png",	//柱1
 	"data/result/resultpillar.png",	//柱2
 };
