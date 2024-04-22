@@ -22,7 +22,7 @@ enum PANEL_TYPE
 // パネルの画像ファイルパス
 const char NORMALPANEL_PATH[] = { "data/play/パネル表/パネル表1.png" };
 const char INSIDEPANEL_PATH[] = { "data/play/パネル裏/パネル裏1.png" };
-
+const char HEART_PATH[] = { "data/play/heart.png" };
 // 画像サイズ
 const int PANEL_SIZE = 64;
 
@@ -49,15 +49,6 @@ const int PANEL_Y_NUM[QUESTION_LEVEL_NUM] =
 	4,	// QUESTION_LEVEL_44
 	5,	// QUESTION_LEVEL_55
 	6,	// QUESTION_LEVEL_66
-};
-
-// 問題の種類
-enum QUESTION_TYPE
-{
-	QUESTION_TYPE_1 = 0,
-	QUESTION_TYPE_2,
-
-	QUESTION_TYPE_NUM,
 };
 
 // csvのファイルパス
@@ -159,7 +150,9 @@ private:
 	int InversionXpos, InversionYpos;	// 反転するパネルの座標
 
 	bool isInside;	// 回転させるかどうか
+	bool isAllHit; // 全部あっているか
 
+	int hearthandle;
 	// 問題決め用
 	QUESTION_LEVEL questionLevel;
 	QUESTION_TYPE questionType;
@@ -173,6 +166,7 @@ private:
 	// フレームカウント用
 	int FrameCnt;
 	int EffectFrameCnt;
+	int paneldisframeCnt;
 public:
 	Panel();
 	~Panel();

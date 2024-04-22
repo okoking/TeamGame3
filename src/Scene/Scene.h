@@ -34,6 +34,15 @@ enum QUESTION_LEVEL
 	QUESTION_LEVEL_NUM,
 };
 
+// –â‘è‚ÌŽí—Þ
+enum QUESTION_TYPE
+{
+	QUESTION_TYPE_1 = 0,
+	QUESTION_TYPE_2,
+
+	QUESTION_TYPE_NUM,
+};
 
 extern SCENE_ID g_CurrentSceneID;
 extern QUESTION_LEVEL g_QuestonLevelID;
+extern QUESTION_TYPE g_QuestonTypeID;

@@ -8,9 +8,6 @@ const char ENEMY_PATH[] = { "data/play/move1.png" };				//プレイシーンの背景画像
 //プレイシーンの初期化
 void Play::Init()
 {
-	//プレイヤー関連
-	player.Init();
-
 	// パネル
 	panel.Init();
 
@@ -34,15 +31,11 @@ void Play::Load()
 	enemyhandle = LoadGraph(ENEMY_PATH);	//敵
 	ImgHP = LoadGraph("data/play/HP.png");
 	img_sikaku = LoadGraph("data/play/sikaku.png");
-	//プレイヤー関連
-	player.Load();									//プレイヤー画像の読み込み
 }
 
 //プレイシーンの通常処理
 void Play::Step()
 {
-	player.Step();			//プレイヤーの通常処理
-
 	panel.Step();			// パネルの通常処理
 }
 
@@ -53,7 +46,6 @@ void Play::Draw()
 	DrawGraph(500, 0,enemyhandle, true);
 	//DrawRotaGraph(400, 300,1.0f,0.0f, enemyhandle, true);
 
-	player.Draw();		//プレイヤー画像の描画
 	panel.Draw();			// パネルの通常処理
 
 	//文字の大きさを変更
@@ -73,14 +65,10 @@ void Play::Draw()
 //プレイヤーシーンの終了処理
 void Play::Fin()
 {
-	player.Fin();		//プレイヤーの終了処理
 	panel.Fin();		// パネル終了処理
 
 	DeleteGraph(enemyhandle);	// 敵画像処理
 	//gem
 	Sound::Bgm::StopSound(BGM_PLAY);
-
-
-	g_CurrentSceneID = SCENE_ID_INIT_RESULT;
 }
 

@@ -8,6 +8,7 @@ SCENE_ID g_CurrentSceneID;	//シーン変数
 
 //ゲームモード
 QUESTION_LEVEL g_QuestonLevelID;
+QUESTION_TYPE g_QuestonTypeID;
 
 //初期化
 void Title::Init()
@@ -21,6 +22,7 @@ void Title::Init()
 	//bgm
 	Sound::Bgm::Play(BGM_TITLE);
 	Sound::Bgm::SetVolume(BGM_TITLE,50);
+	g_QuestonTypeID = QUESTION_TYPE_1;
 
 	//透過点滅
 	fade[0] = 0;

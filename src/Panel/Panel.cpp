@@ -12,6 +12,7 @@ Panel::Panel()
 
 	// 回転させるかどうか
 	isInside = false;
+	isAllHit = false;
 
 	// 問題決め用
 	questionLevel = (QUESTION_LEVEL)-1;
@@ -26,6 +27,7 @@ Panel::Panel()
 	// フレームカウント用
 	FrameCnt = -1;
 	EffectFrameCnt = -1;
+	paneldisframeCnt = -1;
 
 	for (int PanelYIndex = 0; PanelYIndex < PANEL_Y_MAX_NUM; PanelYIndex++) {
 		for (int PanelXIndex = 0; PanelXIndex < PANEL_X_MAX_NUM; PanelXIndex++) {
@@ -77,8 +79,11 @@ Panel::~Panel()
 void Panel::Init()
 {
 	// フレームカウント用
-	FrameCnt = 0;
+	FrameCnt = 1;
 	EffectFrameCnt = 0;
+	paneldisframeCnt = MISSTAKE_MAX_FRAME + 25;
+
+	hearthandle = -1;
 
 	// エフェクト
 	effect.Init();
@@ -89,10 +94,11 @@ void Panel::Init()
 	
 	// 回転させるかどうか
 	isInside = false;
+	isAllHit = false;
 
 	// 問題決め用
-	questionLevel = QUESTION_LEVEL_44;
-	questionType = QUESTION_TYPE_1;
+	questionLevel = g_QuestonLevelID;
+	questionType = g_QuestonTypeID;
 
 	// 残り手数カウント用
 	StepCnt = STEP_NUM[questionLevel][questionType];
@@ -147,6 +153,8 @@ void Panel::Load()
 	// エフェクト
 	effect.Load(EFFECT_TYPE_NORMAL, 9);
 	effect.Load(EFFECT_TYPE_INSIDE, 9);
+
+	hearthandle = LoadGraph(HEART_PATH);
 
 	// ファイル読み込み
 	ReadFile();
@@ -241,11 +249,12 @@ void Panel::Step()
 	// パネルの模様が一致しているか
 	PanelPatternMatch();
 
+	// 体力の処理
+	StepHp();
+
 	// 間違っているとき処理
 	MissTake();
 
-	// 体力の処理
-	StepHp();
 }
 
 // パネルの描画
@@ -268,16 +277,16 @@ void Panel::Draw()
 					}
 				}
 			}
-		
-			// 残りHPと手数の表示
-			//文字の大きさを変更
-			SetFontSize(32);
-
-			DrawFormatString(0, 0, GetColor(255, 255, 255), "残りHP：%d", HP, true);
-			DrawFormatString(0, 32, GetColor(255, 255, 255), "残り手数：%d", StepCnt, true);
-			DrawFormatString(0, 64, GetColor(255, 255, 255), "g_FrameCnt：%d", FrameCnt, true);
 		}
 	}
+
+	for (int i = 0; i < HP; i++) {
+		DrawGraph(64 * i, 0, hearthandle, true);
+	}
+
+	DrawFormatString(300, 400, GetColor(255, 255, 255), "%d", StepCnt, true);
+	DrawFormatString(300, 500, GetColor(255, 255, 255), "%d", FrameCnt, true);
+
 
 	// エフェクト
 	effect.Draw();
@@ -299,8 +308,18 @@ void Panel::Fin()
 			//反転したパネルハンドル
 			DeleteGraph(anspanelInfo[PanelYIndex][PanelXIndex].handle[PANEL_PATTERN_INSIDE]);
 			DeleteGraph(anspanelInfo[PanelYIndex][PanelXIndex].handle[PANEL_PATTERN_INSIDE]);
+
 		}
 	}
+	DeleteGraph(hearthandle);
+
+	g_CurrentSceneID = SCENE_ID_INIT_RESULT;
+
+	if (isAllHit) {
+		// 次の問題に向かう処理
+		NextQuestion();
+	}
+
 }
 
 // パネルの要素をリセット
@@ -321,7 +340,7 @@ void Panel::ResetPanel()
 void Panel::PaneltoMouseCollision()
 {
 	// 回転しているならとらない
-	if (FrameCnt == 0) {
+	if (EffectFrameCnt == 0) {
 		int MousePosX, MousePosY;
 
 		GetMousePoint(&MousePosX, &MousePosY);
@@ -331,11 +350,6 @@ void Panel::PaneltoMouseCollision()
 				if (anspanelInfo[PanelYIndex][PanelXIndex].isUse) {
 					if (Collision::Rect(anspanelInfo[PanelYIndex][PanelXIndex].x, anspanelInfo[PanelYIndex][PanelXIndex].y, PANEL_SIZE, PANEL_SIZE,
 						MousePosX, MousePosY, 1, 1)) {
-						// マウスカーソルがパネルに当たっているなら囲う
-						// 仮でここに直接書いてる
-						DrawLineBox(anspanelInfo[PanelYIndex][PanelXIndex].x, anspanelInfo[PanelYIndex][PanelXIndex].y,
-							anspanelInfo[PanelYIndex][PanelXIndex].x + PANEL_SIZE, anspanelInfo[PanelYIndex][PanelXIndex].y + PANEL_SIZE, GetColor(255, 255, 255));
-
 						if (Input::Mouse::Push(MOUSE_INPUT_LEFT)) {
 							// 反転を左上から始める
 							InversionXpos = PanelXIndex - 1;
@@ -347,6 +361,8 @@ void Panel::PaneltoMouseCollision()
 							// 反転を確認する
 							anspanelInfo[PanelYIndex][PanelXIndex].isInversion = true;
 
+							paneldisframeCnt = 0;
+
 							// 残り手数カウントデクリメント
 							StepCnt--;
 						}
@@ -354,7 +370,10 @@ void Panel::PaneltoMouseCollision()
 				}
 			}
 		}
+	
+		
 	}
+	paneldisframeCnt++;
 }
 
 // パネル反転用
@@ -417,6 +436,7 @@ void Panel::InversionPanel()
 void Panel::PanelPatternMatch()
 {
 	int Cnt = 0;
+	isAllHit = false;
 
 	for (int PanelYIndex = 0; PanelYIndex < PANEL_Y_MAX_NUM; PanelYIndex++) {
 		for (int PanelXIndex = 0; PanelXIndex < PANEL_X_MAX_NUM; PanelXIndex++) {
@@ -428,8 +448,7 @@ void Panel::PanelPatternMatch()
 				Cnt++;
 				// すべて一致するなら次の問題へ
 				if (Cnt == PANEL_Y_NUM[questionLevel] * PANEL_X_NUM[questionLevel]) {
-					// 次の問題に向かう処理
-					NextQuestion();
+					isAllHit = true;
 				}
 			}
 		}
@@ -444,20 +463,24 @@ void Panel::StepHp()
 	}
 
 	// 残り手数が0なら実行
-	if (StepCnt == 0) {
+	if (StepCnt == 0 || isAllHit) {
 		// 2秒経つまで処理を遅らせる
 		if (FrameCnt == MISSTAKE_MAX_FRAME + 25) {
-
 			FrameCnt = 0;
-			HP--;
+			if (StepCnt == 0) {
+				HP--;
+			}
 
-			if (HP == 0) {
+			if (HP == 0 || isAllHit) {
 				// 体力がなくなったならリザルトへ
 				g_CurrentSceneID = SCENE_ID_FIN_PLAY;
 			}
-
+		}
+		else if (FrameCnt == 0) {
 			// パネルの要素をリセット
 			ResetPanel();
+			// 加算
+			FrameCnt++;
 		}
 		else {
 			// 加算
@@ -473,25 +496,40 @@ void Panel::StepHp()
 // 次の問題に向かう処理
 void Panel::NextQuestion()
 {
-	// プレイ初期化シーンへ
 	g_CurrentSceneID = SCENE_ID_INIT_PLAY;
+
+	switch (g_QuestonTypeID) {
+		case QUESTION_TYPE_1:
+			// プレイ初期化シーンへ
+			g_QuestonTypeID = QUESTION_TYPE_2;
+			break;
+		case QUESTION_TYPE_2:
+			g_CurrentSceneID = SCENE_ID_INIT_RESULT;
+			// g_QuestonTypeID = QUESTION_TYPE_2;
+			break;
+		default:
+			break;
+	}
+
 }
 
 // 間違っているとき処理
 void Panel::MissTake()
 {
 	// 間違っている部分を出す
-	for (int PanelYIndex = 0; PanelYIndex < PANEL_Y_MAX_NUM; PanelYIndex++) {
-		for (int PanelXIndex = 0; PanelXIndex < PANEL_X_MAX_NUM; PanelXIndex++) {
-			if (anspanelInfo[PanelYIndex][PanelXIndex].isMissTake) {
-				if (anspanelInfo[PanelYIndex][PanelXIndex].MissTakeCnt > MISSTAKE_MAX_FRAME) {
-					anspanelInfo[PanelYIndex][PanelXIndex].MissTakeCnt = MISSTAKE_MAX_FRAME;
-				}
-				else if (anspanelInfo[PanelYIndex][PanelXIndex].MissTakeCnt == MISSTAKE_MAX_FRAME) {
-					anspanelInfo[PanelYIndex][PanelXIndex].isMissTake = false;
-				}
-				else if (anspanelInfo[PanelYIndex][PanelXIndex].MissTakeCnt < MISSTAKE_MAX_FRAME) {
-					anspanelInfo[PanelYIndex][PanelXIndex].MissTakeCnt++;
+	if (StepCnt == 0) {
+		for (int PanelYIndex = 0; PanelYIndex < PANEL_Y_MAX_NUM; PanelYIndex++) {
+			for (int PanelXIndex = 0; PanelXIndex < PANEL_X_MAX_NUM; PanelXIndex++) {
+				if (anspanelInfo[PanelYIndex][PanelXIndex].isMissTake) {
+					if (anspanelInfo[PanelYIndex][PanelXIndex].MissTakeCnt > MISSTAKE_MAX_FRAME) {
+						anspanelInfo[PanelYIndex][PanelXIndex].MissTakeCnt = MISSTAKE_MAX_FRAME;
+					}
+					else if (anspanelInfo[PanelYIndex][PanelXIndex].MissTakeCnt == MISSTAKE_MAX_FRAME) {
+						anspanelInfo[PanelYIndex][PanelXIndex].isMissTake = false;
+					}
+					else if (anspanelInfo[PanelYIndex][PanelXIndex].MissTakeCnt < MISSTAKE_MAX_FRAME) {
+						anspanelInfo[PanelYIndex][PanelXIndex].MissTakeCnt++;
+					}
 				}
 			}
 		}
