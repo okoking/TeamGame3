@@ -97,11 +97,11 @@ void Panel::Init()
 	isAllHit = false;
 
 	// 問題決め用
-	questionLevel = g_QuestonLevelID;
-	questionType = g_QuestonTypeID;
+	//questionLevel = g_QuestonLevelID;
+	//questionType = g_QuestonTypeID;
 
 	// 残り手数カウント用
-	StepCnt = STEP_NUM[questionLevel][questionType];
+	StepCnt = STEP_NUM[g_QuestonLevelID][g_QuestonTypeID];
 
 	// 残りHP 
 	HP = INIT_HP;
@@ -129,14 +129,14 @@ void Panel::Init()
 			questionpanelInfo[PanelYIndex][PanelXIndex].x = PANEL_SIZE * PanelXIndex;
 			questionpanelInfo[PanelYIndex][PanelXIndex].y = PANEL_SIZE * PanelYIndex + 300;
 
-			anspanelInfo[PanelYIndex][PanelXIndex].x = PANEL_SIZE * PanelXIndex + 400;
+			anspanelInfo[PanelYIndex][PanelXIndex].x = PANEL_SIZE * PanelXIndex + 500;
 			anspanelInfo[PanelYIndex][PanelXIndex].y = PANEL_SIZE * PanelYIndex + 300;
 			
 			anspanelInfo[PanelYIndex][PanelXIndex].MissTakeCnt = MISSTAKE_MAX_FRAME;
 
 			// 使用中フラグ
 			// レベルにあった範囲をtrueにする
-			if (PanelYIndex < PANEL_Y_NUM[questionLevel] && PanelXIndex < PANEL_X_NUM[questionLevel]) {
+			if (PanelYIndex < PANEL_Y_NUM[g_QuestonLevelID] && PanelXIndex < PANEL_X_NUM[g_QuestonLevelID]) {
 				questionpanelInfo[PanelYIndex][PanelXIndex].isUse = true;
 				anspanelInfo[PanelYIndex][PanelXIndex].isUse = true;
 			}
@@ -181,7 +181,7 @@ void Panel::ReadFile()
 {
 	FILE* fp;
 
-	fopen_s(&fp, QuestionCsvFilePath[questionLevel][questionType], "r");
+	fopen_s(&fp, QuestionCsvFilePath[g_QuestonLevelID][g_QuestonTypeID], "r");
 
 	int mapIndexX = 0;
 	int mapIndexY = 0;
@@ -206,7 +206,7 @@ void Panel::ReadFile()
 		}
 	}
 
-	fopen_s(&fp, AnsCsvFilePath[questionLevel][questionType], "r");
+	fopen_s(&fp, AnsCsvFilePath[g_QuestonLevelID][g_QuestonTypeID], "r");
 
 	mapIndexX = 0;
 	mapIndexY = 0;
@@ -281,11 +281,11 @@ void Panel::Draw()
 	}
 
 	for (int i = 0; i < HP; i++) {
-		DrawGraph(64 * i, 0, hearthandle, true);
+		DrawGraph(32 * i, 0, hearthandle, true);
 	}
 
-	DrawFormatString(300, 400, GetColor(255, 255, 255), "%d", StepCnt, true);
-	DrawFormatString(300, 500, GetColor(255, 255, 255), "%d", FrameCnt, true);
+
+	DrawFormatString(0, 64, GetColor(255, 255, 255), "残り手数：%d", StepCnt, true);
 
 
 	// エフェクト
@@ -326,7 +326,9 @@ void Panel::Fin()
 void Panel::ResetPanel()
 {
 	// 残り手数カウント初期化
-	StepCnt = STEP_NUM[questionLevel][questionType];
+	StepCnt = STEP_NUM[g_QuestonLevelID][g_QuestonTypeID];
+
+	Sound::Se::Play(SE_MISS);
 
 	for (int PanelYIndex = 0; PanelYIndex < PANEL_Y_MAX_NUM; PanelYIndex++) {
 		for (int PanelXIndex = 0; PanelXIndex < PANEL_X_MAX_NUM; PanelXIndex++) {
@@ -372,9 +374,7 @@ void Panel::PaneltoMouseCollision()
 					}
 				}
 			}
-		}
-	
-		
+		}	
 	}
 	paneldisframeCnt++;
 }
@@ -450,7 +450,7 @@ void Panel::PanelPatternMatch()
 				
 				Cnt++;
 				// すべて一致するなら次の問題へ
-				if (Cnt == PANEL_Y_NUM[questionLevel] * PANEL_X_NUM[questionLevel]) {
+				if (Cnt == PANEL_Y_NUM[g_QuestonLevelID] * PANEL_X_NUM[g_QuestonLevelID]) {
 					isAllHit = true;
 				}
 			}
@@ -461,10 +461,6 @@ void Panel::PanelPatternMatch()
 // 体力の処理
 void Panel::StepHp()
 {
-	if (StepCnt < 0) {
-		StepCnt = 0;
-	}
-
 	// 残り手数が0なら実行
 	if (StepCnt == 0 || isAllHit) {
 		// 2秒経つまで処理を遅らせる
@@ -532,7 +528,6 @@ void Panel::MissTake()
 					}
 					else if (anspanelInfo[PanelYIndex][PanelXIndex].MissTakeCnt < MISSTAKE_MAX_FRAME) {
 						anspanelInfo[PanelYIndex][PanelXIndex].MissTakeCnt++;
-						Sound::Se::Play(SE_MISS);
 					}
 				}
 			}
