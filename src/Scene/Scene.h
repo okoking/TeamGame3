@@ -21,7 +21,6 @@ enum SCENE_ID
 	SCENE_ID_INIT_RESULT = 300,
 	SCENE_ID_LOOP_RESULT,
 	SCENE_ID_FIN_RESULT,
-
 };
 
 // –â‘è‚Ì“ïˆÕ“x
