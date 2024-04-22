@@ -363,6 +363,9 @@ void Panel::PaneltoMouseCollision()
 
 							paneldisframeCnt = 0;
 
+							//se
+							Sound::Se::Play(SE_CLICK_PANEL);
+
 							// 残り手数カウントデクリメント
 							StepCnt--;
 						}
@@ -529,6 +532,7 @@ void Panel::MissTake()
 					}
 					else if (anspanelInfo[PanelYIndex][PanelXIndex].MissTakeCnt < MISSTAKE_MAX_FRAME) {
 						anspanelInfo[PanelYIndex][PanelXIndex].MissTakeCnt++;
+						Sound::Se::Play(SE_MISS);
 					}
 				}
 			}

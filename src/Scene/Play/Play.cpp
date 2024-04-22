@@ -67,6 +67,8 @@ void Play::Fin()
 {
 	panel.Fin();		// ƒpƒlƒ‹I—¹ˆ—
 
+	Sound::Se::Play(SE_CLEAR);
+
 	DeleteGraph(enemyhandle);	// “G‰æ‘œˆ—
 	//gem
 	Sound::Bgm::StopSound(BGM_PLAY);

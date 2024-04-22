@@ -13,9 +13,9 @@ enum BGM_TYPE
 enum SE_TYPE
 {
 	SE_SYSTEM,		//システム
-	SE_TIME_LIMIT,	//時間制限
-	SE_FINISH,		//ゲーム終了
-	SE_GUARD,		//ガード
+	SE_CLICK_PANEL,	//パネルクリック
+	SE_CLEAR,		//正解
+	SE_MISS,		//不正解
 	SE_DAMAGE,		//ダメージ
 
 	SE_MAX_NUM

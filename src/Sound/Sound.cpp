@@ -24,10 +24,10 @@ int soundVolume_bgm[BGM_MAX_NUM] =
 //SEのパス
 char seSoundPath[SE_MAX_NUM][255] =
 {
-	"data/sound/se/system.mp3",		//システム
-	"data/sound/se/timeLimit.mp3",	//時間制限
-	"data/sound/se/finish.mp3",		//ゲーム終了
-	"data/sound/se/guard.mp3",		//ガード
+	"data/sound/se/system.wav",		//システム
+	"data/sound/se/clickpanel.wav",	//パネルクリック
+	"data/sound/se/clear.wav",		//正解
+	"data/sound/se/miss.wav",		//不正解
 	"data/sound/se/damage.mp3",		//ダメージ
 };
 

@@ -15,7 +15,7 @@ void Result::Init()
 
 	//bgm
 	Sound::Bgm::Play(BGM_RESULT);
-	Sound::Bgm::SetVolume(BGM_RESULT, 50);
+	Sound::Bgm::SetVolume(BGM_RESULT, 40);
 
 	//’Êíˆ—‚ÉˆÚs
 	g_CurrentSceneID = SCENE_ID_LOOP_RESULT;
